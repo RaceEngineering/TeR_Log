@@ -1,0 +1,3 @@
+[submodule "TeR_DATABASES"]
+	path = TeR_DATABASES
+	url = https://github.com/Tecnun-eRacing/TeR_DATABASES.git
