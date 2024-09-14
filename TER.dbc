@@ -1,0 +1,233 @@
+VERSION ""
+
+
+NS_ :
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VAL_
+    BA_DEF_SGTYPE_
+    BA_SGTYPE_
+    SIG_TYPE_REF_
+    VAL_TABLE_
+    SIG_GROUP_
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+    BO_TX_BU_
+    BA_DEF_REL_
+    BA_REL_
+    BA_DEF_DEF_REL_
+    BU_SG_REL_
+    BU_EV_REL_
+    BU_BO_REL_
+    SG_MUL_VAL_
+
+BS_: 
+BU_: SteeringWheel PEDAL TER_CMDS FRONT_AXLE IMU LVBMS ECU CHARGER TireTemps 
+BO_ 1016 rrTemp: 8 TireTemps
+   SG_ TW4 : 55|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW3 : 39|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW2 : 23|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW1 : 7|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+
+BO_ 1020 rlTemp: 8 TireTemps
+   SG_ TW4 : 55|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW3 : 39|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW2 : 23|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW1 : 7|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+
+BO_ 1012 frTemp: 8 TireTemps
+   SG_ TW4 : 55|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW3 : 39|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW2 : 23|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW1 : 7|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+
+BO_ 1008 flTemp: 8 TireTemps
+   SG_ TW4 : 55|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW3 : 39|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW2 : 23|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+   SG_ TW1 : 7|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+
+BO_ 9 Buttons_BitMap: 8 SteeringWheel
+   SG_ r6 : 7|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ r5 : 6|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ r4 : 5|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ r3 : 4|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ r2 : 3|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ r1 : 2|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ LI : 1|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ LD : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 3 APPS: 8 PEDAL
+   SG_ APPS_1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+   SG_ APPS_2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+   SG_ IMP_FLAG : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+   SG_ APPS_AV : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1 COMMAND: 8 TER_CMDS
+   SG_ CMD M : 0|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ kwLimit m193 : 8|8@1+ (1,0) [1|120] "kW" Vector__XXX
+   SG_ trqLimit m193 : 16|8@1+ (1,0) [1|180] "N/m" Vector__XXX
+   SG_ speedLimit m193 : 24|8@1+ (1,0) [1|120] "km/h" Vector__XXX
+   SG_ cfgLimiter m194 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ cfgMode m194 : 16|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ cfgTractionControl m194 : 24|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ ONOFF m64 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ VALUE m128 : 8|32@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 4 BPPS: 1 PEDAL
+   SG_ BPPS : 0|8@1+ (1,0) [0|1] "Bar" Vector__XXX
+
+BO_ 5 STEER: 8 PEDAL
+   SG_ ANGLE : 0|16@1- (1,0) [-360|360] "Grad" Vector__XXX
+
+BO_ 277 Front_RPM: 8 FRONT_AXLE
+   SG_ RPM_L : 0|16@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ RPM_R : 16|16@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 278 Front_V: 8 FRONT_AXLE
+   SG_ vx_l : 0|12@1+ (0.01,0) [0|1] "" Vector__XXX
+   SG_ vx_r : 12|12@1+ (0.01,0) [0|1] "" Vector__XXX
+   SG_ vx_av : 24|12@1+ (0.01,0) [0|1] "" Vector__XXX
+
+BO_ 279 YPR: 8 IMU
+   SG_ YAW : 40|20@1- (0.01,0) [0|1] "" Vector__XXX
+   SG_ PITCH : 0|20@1- (0.01,0) [0|1] "" Vector__XXX
+   SG_ ROLL : 20|20@1- (0.01,0) [0|1] "" Vector__XXX
+
+BO_ 16 LV_VOLTAGES: 8 LVBMS
+   SG_ V1 : 0|10@1+ (0.01,0) [0|1] "V" Vector__XXX
+   SG_ V2 : 10|10@1+ (0.01,0) [0|1] "V" Vector__XXX
+   SG_ V3 : 20|10@1+ (0.01,0) [0|1] "V" Vector__XXX
+   SG_ V4 : 30|10@1+ (0.01,0) [0|1] "V" Vector__XXX
+   SG_ V5 : 40|10@1+ (0.01,0) [0|1] "V" Vector__XXX
+   SG_ V6 : 50|10@1+ (0.01,0) [0|1] "V" Vector__XXX
+
+BO_ 17 LV_TEMPS: 6 LVBMS
+   SG_ T1 : 0|16@1+ (0.1,0) [0|1] "Grad" Vector__XXX
+   SG_ T2 : 16|16@1+ (0.1,0) [0|1] "Grad" Vector__XXX
+   SG_ T3 : 32|16@1+ (0.1,0) [0|1] "Grad" Vector__XXX
+
+BO_ 18 LV_STATUS: 8 LVBMS
+   SG_ VOLTAGES_OK : 1|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ TEMPS_OK : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ CURRENT_OK : 3|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ STATUS : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ V_tot : 52|12@1+ (0.01,0) [0|0] "" Vector__XXX
+   SG_ V_min : 42|10@1+ (0.01,0) [0|0] "" Vector__XXX
+   SG_ V_mean : 32|10@1+ (0.01,0) [0|0] "" Vector__XXX
+   SG_ V_max : 22|10@1+ (0.01,0) [0|0] "" Vector__XXX
+   SG_ LV_ON : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ REFRI_ON : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ CURRENT : 6|16@1+ (0.1,0) [0|1] "A" Vector__XXX
+
+BO_ 280 AngRate: 8 IMU
+   SG_ Roll_Rate_x : 0|20@1- (0.001,0) [0|1] "" Vector__XXX
+   SG_ Pitch_Rate_y : 20|20@1- (0.001,0) [0|1] "" Vector__XXX
+   SG_ Yaw_Rate_z : 40|20@1- (0.001,0) [0|1] "" Vector__XXX
+
+BO_ 281 GPS_Lat_Long: 8 IMU
+   SG_ Latitude : 0|32@1- (1e-07,0) [0|1] "" Vector__XXX
+   SG_ Longitude : 32|32@1- (1e-07,0) [0|1] "" Vector__XXX
+
+BO_ 288 GPS_Altitude_Pres: 8 IMU
+   SG_ Altidude : 0|32@1- (1e-07,0) [0|1] "" Vector__XXX
+   SG_ Barometric_Pressure : 32|16@1- (1e-07,0) [0|1] "" Vector__XXX
+
+BO_ 289 Accel: 8 IMU
+   SG_ a_x : 0|16@1- (0.001,0) [0|1] "" Vector__XXX
+   SG_ a_y : 16|16@1- (0.001,0) [0|1] "" Vector__XXX
+   SG_ a_z : 32|16@1- (0.001,0) [0|1] "" Vector__XXX
+
+BO_ 290 Mag: 8 IMU
+   SG_ Heading : 0|16@1- (0.01,0) [0|1] "" Vector__XXX
+
+BO_ 291 VelBody: 8 IMU
+   SG_ v_x : 0|16@1- (0.001,0) [0|1] "" Vector__XXX
+   SG_ v_y : 16|16@1- (0.001,0) [0|1] "" Vector__XXX
+   SG_ v_z : 32|16@1- (0.001,0) [0|1] "" Vector__XXX
+
+BO_ 292 ImuStatus: 8 IMU
+   SG_ Status : 0|16@1- (1,0) [0|1] "" Vector__XXX
+   SG_ PosU : 16|16@1- (0.001,0) [0|1] "" Vector__XXX
+   SG_ VelU : 32|16@1- (0.001,0) [0|1] "" Vector__XXX
+
+BO_ 37 TER_STATUS: 4 ECU
+   SG_ BSPD : 9|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ SL : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ STATE : 0|4@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ R2D : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ APPS : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ IMD : 10|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ AMS : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ IMU : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ LEFT_INV : 25|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ REFRI : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ RIGHT_INV : 24|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ SCS : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 2 RESPONSE: 8 TER_CMDS
+   SG_ CMD M : 0|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ CODE : 56|8@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 517 CHRG_STATUS: 8 CHARGER
+   SG_ State : 0|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ Voltage : 8|10@1+ (1,0) [0|1] "V" Vector__XXX
+   SG_ Current : 18|6@1+ (1,0) [0|1] "A" Vector__XXX
+   SG_ AMS : 24|1@1+ (1,0) [0|1] "A" Vector__XXX
+   SG_ IMD : 25|1@1+ (1,0) [0|1] "A" Vector__XXX
+   SG_ SL : 26|1@1+ (1,0) [0|1] "A" Vector__XXX
+
+BO_ 38 DynamicConfig: 8 ECU
+   SG_ Limiter M : 0|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ Mode : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ TractionControl : 16|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ kwLimit m2 : 24|8@1+ (1,0) [0|1] "kW" Vector__XXX
+   SG_ trqLimit m0 : 24|8@1+ (1,0) [0|1] "n/m" Vector__XXX
+   SG_ speedLimit m1 : 24|8@1+ (1,0) [0|120] "km/h" Vector__XXX
+
+BO_ 39 WheelInfo: 8 ECU
+   SG_ rrRPM : 0|16@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ rlRPM : 24|16@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ rrTRQ : 16|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ rlTRQ : 40|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ speed : 48|8@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 40 InverterInfo: 8 ECU
+   SG_ leftDem : 0|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ rightDem : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ leftPowerStageTemp : 16|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ rightPowerStageTemp : 24|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ leftMotorTemp : 32|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ rightMotorTemp : 40|8@1+ (1,0) [0|1] "" Vector__XXX
+
+CM_ BU_ SteeringWheel "The Steering Input MOdule";
+CM_ BU_ PEDAL "The Drivers Sensor Board";
+CM_ BU_ TER_CMDS "The Command Subsystem For TeR Vehicle";
+CM_ BU_ FRONT_AXLE "The Board for Front axle sensors";
+CM_ BU_ IMU "TeRs Inertial Measurement Unit";
+CM_ BU_ LVBMS "The LV battery Management System";
+CM_ BU_ ECU "The VCU for TeR Vehicle";
+CM_ BU_ CHARGER "The Control Module for TeR Charger";
+CM_ BO_ 1 "(0-63)No Args, (64-127)OnOff,(128-191)Value,(192-255)Custom";
+VAL_ 1 CMD 14 "resetBMS" 1 "Calibrate_APPS_min" 2 "Calibrate_APPS_max" 5 "Calibrate_STEER_Leftest" 6 "Calibrate_STEER_Rightest" 8 "discharge" 9 "precharge" 10 "beep" 11 "ready2Drive" 193 "setLimits" 194 "setDynamicConfig" 64 "switchRefri" 65 "switchScs" 0 "charge";
+VAL_ 1 ONOFF 0 "OFF" 1 "ON";
+VAL_ 18 VOLTAGES_OK 0 "FAULT" 1 "OK";
+VAL_ 18 TEMPS_OK 0 "FAULT" 1 "OK";
+VAL_ 18 CURRENT_OK 0 "FAULT" 1 "OK";
+VAL_ 18 STATUS 0 "FAULT" 1 "OK";
+VAL_ 37 STATE 0 "WAIT_SL" 1 "READY2PRECH" 2 "PRECHARGING" 3 "PRECHARGED" 4 "DRIVING";
+VAL_ 2 CODE 1 "OK" 2 "ERROR" 3 "INVALID_STATE" 4 "OUT_OF_RANGE";
+VAL_ 517 State 0 "IDLE" 1 "READY" 2 "PRECHARGING" 3 "PRECHARGED" 4 "CHARGING";
+VAL_ 38 Limiter 0 "limitTorque" 1 "limitSpeed" 2 "limitMechPWR" 3 "limitElecPWR";
+VAL_ 38 Mode 0 "Lineal" 1 "basicTorque" 2 "mdsTorque" 3 "Backwards";
+VAL_ 38 TractionControl 0 "OFF" 1 "Basic";
