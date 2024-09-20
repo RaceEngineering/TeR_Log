@@ -56,7 +56,9 @@ text = """
 {'a_x': -1.965, 'a_y': -6.521, 'a_z': -7.4670000000000005}
 {'Heading': -2.41}
 """
-
+print(text)
+print("Hola")
+print(type(text))
 # Ejecutar la función
 result = extract_data(text) #llamar funcion
 print(result)

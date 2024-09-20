@@ -40,10 +40,11 @@ for match in regex.finditer(log):
 
 log_decode = db.decode_message(msg["id"], msg["data"])
 log_decode_str = json.dumps(log_decode)
-print(log_decode_str)
+print("Hola")
+print(log_decode_str)   #ESTO NO ESTA BIEN
 print(type(log_decode_str))
 
-def extract_data(log_decode_str):   #Crear Funcion que coge un texto y devuelve un diccionario con mis nombres y valores
+def extract_data(text):   #Crear Funcion que coge un texto y devuelve un diccionario con mis nombres y valores
     # Expresion regex para pillar los putos nombres y valores
     pattern = r"'([A-Za-z_]+)':\s*(-?\d+(?:\.\d+)?(?:e-?\d+)?)"
     
