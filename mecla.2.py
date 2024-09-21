@@ -13,10 +13,10 @@ db = cantools.database.load_file("./TER.dbc")
 with open("RUN0.log", 'r') as file:
     log = file.read()
 
-# Compile the regex pattern
+# Compilar regex
 regex = re.compile(pattern)
 
-# Dictionary to group decoded messages
+# Dictionario de mensajes decodificados
 grouped_decoded = defaultdict(list)
 
 # Hacer los matches:
