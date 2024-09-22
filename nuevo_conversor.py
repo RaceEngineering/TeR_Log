@@ -7,6 +7,16 @@ from typing import List, Dict
 class Signal:
     def __init__(self, dbc_path: str):
         self.db = cantools.database.load_file(dbc_path)
+    
+    def _write_to_csv(self, grouped_decoded: Dict[str, List[float]], csv_final: str):
+        # Crear el archivo CSV y escribir los datos
+        with open(csv_final, mode='w', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+
+            for key, values in grouped_decoded.items():
+                writer.writerow([key, values])
+
+        print(f"Decoding completed and saved to {csv_final}")
 
     def decode_log(self, log_path:str, csv_final:str):
 
@@ -40,18 +50,7 @@ class Signal:
 
         self._write_to_csv(grouped_decoded, csv_final)
 
-
-    def _write_to_csv(self, grouped_decoded: Dict[str, List[float]], csv_final: str):
-        # Crear el archivo CSV y escribir los datos
-        with open(csv_final, mode='w', newline='') as csv_file:
-            writer = csv.writer(csv_file)
-
-            for key, values in grouped_decoded.items():
-                writer.writerow([key, values])
-
-        print(f"Decoding completed and saved to {csv_final}")
-
 #Uso del codigo
 decoder = Signal("./TER.dbc")
-decoder.decode_log("RUN0.log", "log_decodificado.csv")
+decoder.decode_log("RUN0.log", "marta.csv")
 
