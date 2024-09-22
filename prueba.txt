@@ -1,7 +1,0 @@
-a=13
-Race
-
-c=34
-d=56
-e=22
-Gorkaaaa
