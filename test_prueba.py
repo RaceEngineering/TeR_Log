@@ -1,7 +1,6 @@
 import re
 import cantools
 import json
-import re
 #import numpy
 #import typing
 
@@ -39,17 +38,27 @@ for match in regex.finditer(log):
     print(db.decode_message(msg["id"], msg["data"]))
 
 log_decode = db.decode_message(msg["id"], msg["data"])
-log_decode_str = json.dumps(log_decode)
+print(type(log_decode))
 print("Hola")
-print(log_decode_str)   #ESTO NO ESTA BIEN
-print(type(log_decode_str))
 
-def extract_data(text):   #Crear Funcion que coge un texto y devuelve un diccionario con mis nombres y valores
+with open('log_decode_str.txt', 'w') as archivo:
+    for key, value in log_decode.items():
+        archivo.write(f'{key}: {value}\n')
+        archivo.write('\n')
+
+file = open("log_decode_str.txt",'r')
+log_decode_str= file.read()
+print(type(log_decode_str))
+print(log_decode_str)
+print("Hola")
+
+
+def extract_data(log_decode_str):   #Crear Funcion que coge un texto y devuelve un diccionario con mis nombres y valores
     # Expresion regex para pillar los putos nombres y valores
     pattern = r"'([A-Za-z_]+)':\s*(-?\d+(?:\.\d+)?(?:e-?\d+)?)"
     
     # Buscar las palabras en el texto y devulve tuplas
-    encontrados = re.findall(pattern, text)
+    encontrados = re.findall(pattern, log_decode_str)
     
     # Crear un diccionario para almacenar los datos
     log_dict = {}
@@ -102,7 +111,7 @@ text = """
 """
 
 # Ejecutar la función
-result = extract_data(text) #llamar funcion
+result = extract_data(log_decode_str) #llamar funcion
 print(result)
 
 

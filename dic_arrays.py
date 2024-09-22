@@ -1,48 +1,4 @@
 import re
-import cantools
-import json
-import re
-#import numpy
-#import typing
-
-#class logDecoder:
-   # def __init__(self, dbcPatch : str, sigList : list = None ):
-      #  self.db = cantools.database.load_file(dbcPatch)
-      #  self.signalList = sigList
-
-   # def decodeLog(self,logPath : str):
-
-
-
-# Define the pattern to obtain a match in the log
-pattern = r'(can0\s+)(\d+)\s+\[(\d)\]\s+([A-F0-9\s]+)'
-
-# Cargar el archivo .dbc
-db = cantools.database.load_file("./TER.dbc")
-
-
-# Open Log File
-file = open("RUN0.log",'r')
-log = file.read()
-
-# Compile the regex pattern
-regex = re.compile(pattern)
-
-# Capture the matches using `re.finditer`:
-for match in regex.finditer(log):
-    msg = {
-        "bus" : match.group(1),
-        "id" : int(match.group(2),16),
-        "DLC" : int(match.group(3)),
-        "data" : bytearray.fromhex(match.group(4))   #cambiandolo de numeros hexadecimales a 
-    }
-    print(db.decode_message(msg["id"], msg["data"]))
-
-log_decode = db.decode_message(msg["id"], msg["data"])
-log_decode_str = json.dumps(log_decode)
-print("Hola")
-print(log_decode_str)   #ESTO NO ESTA BIEN
-print(type(log_decode_str))
 
 def extract_data(text):   #Crear Funcion que coge un texto y devuelve un diccionario con mis nombres y valores
     # Expresion regex para pillar los putos nombres y valores
@@ -100,9 +56,9 @@ text = """
 {'a_x': -1.965, 'a_y': -6.521, 'a_z': -7.4670000000000005}
 {'Heading': -2.41}
 """
-
+print(text)
+print("Hola")
+print(type(text))
 # Ejecutar la función
 result = extract_data(text) #llamar funcion
 print(result)
-
-
