@@ -52,5 +52,5 @@ class Signal:
 
 #Uso del codigo
 decoder = Signal("./TER.dbc")
-decoder.decode_log("RUN0.log", "marta.csv")
+decoder.decode_log("RUN0.log", "decoded_log.csv")
 
