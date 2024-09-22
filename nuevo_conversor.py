@@ -51,7 +51,7 @@ class Signal:
 
         print(f"Decoding completed and saved to {csv_final}")
 
-# Ejemplo de uso
+#Uso del codigo
 decoder = Signal("./TER.dbc")
 decoder.decode_log("RUN0.log", "log_decodificado.csv")
 
