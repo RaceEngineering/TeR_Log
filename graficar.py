@@ -20,20 +20,25 @@ class Signal:
 
         print(f"Decoding completed and saved to {csv_final}")
 
-    def _plot_signal(self, grouped_decoded: Dict[str, List[float]], signal_name: str):
+    def _plot_signal(self, grouped_decoded: Dict[str, List[float]], signal_name: str, save_path: str = None):
         if signal_name in grouped_decoded:
             plt.figure(figsize=(10, 5))
             plt.plot(grouped_decoded[signal_name], label=signal_name)
             plt.title(f"Signal Plot for {signal_name}")
-            plt.xlabel("Sample Number")
+            plt.xlabel("Time")
             plt.ylabel("Value")
             plt.legend()
             plt.grid(True)
+            
+            if save_path:
+                plt.savefig(save_path)  # Guardar la gráfica en un archivo
+                print(f"Plot saved to {save_path}")
+                
             plt.show()
         else:
             print(f"Signal {signal_name} not found in the decoded data.")
 
-    def decode_log(self, log_path:str, csv_final:str, signal_to_plot:str=None):
+    def decode_log(self, log_path:str, csv_final:str, signal_to_plot:str=None, plot_save_path: str = None ):
 
         pattern = r'(can0\s+)(\d+)\s+\[(\d)\]\s+([A-F0-9\s]+)'
        
@@ -66,10 +71,10 @@ class Signal:
         self._write_to_csv(grouped_decoded, csv_final)
         
         if signal_to_plot:
-            self._plot_signal(grouped_decoded, signal_to_plot)
+            self._plot_signal(grouped_decoded, signal_to_plot,save_path=plot_save_path)
 
     
 
 #Uso del codigo
 decoder = Signal("./TER.dbc")
-decoder.decode_log("RUN0.log", "decoded_log.csv",signal_to_plot="YAW")
+decoder.decode_log("RUN0.log", "decoded_log.csv",signal_to_plot="YAW",plot_save_path="YAW_plot.png")
