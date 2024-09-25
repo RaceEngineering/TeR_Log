@@ -86,7 +86,8 @@ class Signal:
             for key, value in log_decode.items():
                 if isinstance(value, (int, float)):
                     grouped_decoded[key].append(value)
-        
+       
+        # Das opcion a que eligan formato y llamas a la funcion especifica
         if output_format == 'csv':
             self._write_to_csv(grouped_decoded, output_file)
         elif output_format == 'ascii':
