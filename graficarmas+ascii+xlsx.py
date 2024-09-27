@@ -1,10 +1,11 @@
-import re
-import cantools
-import csv
+import re #Libreria para python
+import cantools #Libreria para decodificar los mensajes del CAN
+import csv #Libreria para convertir a csv
 from collections import defaultdict
 from typing import List, Dict
-import matplotlib.pyplot as plt
-import pandas as pd
+import matplotlib.pyplot as plt #Libreria para garficar con python
+import pandas as pd #Libreria para convertir en xlsx mas facil pasandolo a un Dataframe
+from scipy.io import savemat
 
 class Signal:
     def __init__(self, dbc_path: str):
@@ -25,6 +26,10 @@ class Signal:
         # Escribir el DataFrame a un archivo Excel
         df.to_excel(xlsx_final, index=False)
         print(f"Decoding completed and saved to {xlsx_final}")
+    
+    def _write_to_mat(self,grouped_decoded: Dict[str, List[float]], mat_final: str):
+        savemat(mat_final,grouped_decoded)
+        print(f"Decoding completed and saved to {mat_final}")
 
     
     def _write_to_ascii(self, grouped_decoded: Dict[str, List[float]], ascii_final: str):
@@ -104,6 +109,8 @@ class Signal:
             self._write_to_ascii(grouped_decoded, output_file)
         elif output_format == 'xlsx':
             self._write_to_xlsx(grouped_decoded, output_file)
+        elif output_format == 'mat':
+            self._write_to_mat(grouped_decoded, output_file)
         else:
             print("Unsupported format")
         
@@ -114,4 +121,4 @@ class Signal:
   
 # Uso del código
 decoder = Signal("./TER.dbc")
-decoder.decode_log("RUN0.log", "decoded_log.xlsx", "xlsx", signals_to_plot=["PITCH", "ROLL", "YAW"], plot_save_path="combined_plot.png")
+decoder.decode_log("RUN0.log", "decoded_log.mat", "mat", signals_to_plot=["PITCH", "ROLL", "YAW"], plot_save_path="combined_plot.png")
