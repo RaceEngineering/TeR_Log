@@ -25,7 +25,7 @@ class Signal:
         df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in grouped_decoded.items()]))
         df.to_excel(xlsx_final, index=False)
 
-        # Si se genera una gráfica, agrégala al archivo Excel
+        # Si se hace una grafica ponerla en el excel
         if plot_save_path:
             workbook = load_workbook(xlsx_final)
             sheet = workbook.create_sheet("Plot")
