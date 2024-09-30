@@ -31,8 +31,14 @@ class Signal:
         if plot_save_path:
             workbook = load_workbook(xlsx_final)
             sheet = workbook.create_sheet("Plot")
-            img = Image(plot_save_path)
-            sheet.add_image(img, 'A1')  # Inserta la imagen en la celda A1
+
+            # Convertir la imagen a formato compatible con openpyxl si es necesario
+            img = PilImage.open(plot_save_path)
+            img.save(plot_save_path)  # Asegurarse de que esté en un formato compatible (PNG es el más recomendado)
+
+            # Cargar la imagen con openpyxl y agregarla a la hoja
+            image = Image(plot_save_path)
+            sheet.add_image(image, 'A1')  # Inserta la imagen en la celda A1
             workbook.save(xlsx_final)
         print(f"Decoding completed and saved to {xlsx_final}")
     
