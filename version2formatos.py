@@ -33,10 +33,10 @@ class Signal:
             # Asegúrate de que la imagen está en formato PNG
             img = PilImage.open(plot_save_path)
             img = img.convert("RGB")  # Convertir la imagen a un formato manejable
-            img.save("plot_image.png")  # Guardar como PNG para asegurarse que es compatible
+            img.save("imagen_xlsx.png")  # Guardar como PNG para asegurarse que es compatible
 
             # Cargar la imagen con openpyxl y agregarla a la hoja
-            image = OpenpyxlImage("plot_image.png")
+            image = OpenpyxlImage("imagen_xlsx.png")
             sheet.add_image(image, 'A1')  # Inserta la imagen en la celda A1
             workbook.save(xlsx_final)
         
