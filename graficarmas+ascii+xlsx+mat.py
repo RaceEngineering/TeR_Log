@@ -5,7 +5,11 @@ from collections import defaultdict
 from typing import List, Dict
 import matplotlib.pyplot as plt #Libreria para garficar con python
 import pandas as pd #Libreria para convertir en xlsx mas facil pasandolo a un Dataframe
-from scipy.io import savemat
+from scipy.io import savemat #Libreria para guardar a un .mat
+from openpyxl import load_workbook
+from openpyxl.drawing.image import Image  # Para insertar imágenes en Excel
+import io  # Para manejar gráficos como imágenes en memoria
+
 
 class Signal:
     def __init__(self, dbc_path: str):
@@ -19,12 +23,25 @@ class Signal:
                 writer.writerow([key, values])
         print(f"Decoding completed and saved to {csv_final}")
 
-    def _write_to_xlsx(self, grouped_decoded: Dict[str, List[float]], xlsx_final:str):
+    def _write_to_xlsx(self, grouped_decoded: Dict[str, List[float]], xlsx_final:str, plots: List[str] = None):
          # Convertir el diccionario a un DataFrame de pandas
         df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in grouped_decoded.items()]))
     
         # Escribir el DataFrame a un archivo Excel
         df.to_excel(xlsx_final, index=False)
+        
+        if plots:
+            # Cargar el archivo Excel para modificarlo
+            wb = load_workbook(xlsx_final)
+            ws = wb.active
+
+            for plot in plots:
+                # Insertar el gráfico en la hoja de Excel
+                img = Image(plot)
+                ws.add_image(img, 'H2')  # Posición del gráfico en la hoja de Excel (ajústalo según tus necesidades)
+            
+            # Guardar el archivo Excel con los gráficos
+            wb.save(xlsx_final)
         print(f"Decoding completed and saved to {xlsx_final}")
     
     def _write_to_mat(self,grouped_decoded: Dict[str, List[float]], mat_final: str):
@@ -121,4 +138,4 @@ class Signal:
   
 # Uso del código
 decoder = Signal("./TER.dbc")
-decoder.decode_log("RUN0.log", "decoded_log.mat", "mat", signals_to_plot=["PITCH", "ROLL", "YAW"], plot_save_path="combined_plot.png")
+decoder.decode_log("RUN0.log", "decoded_log.xlsx", "xlsx", signals_to_plot=["PITCH", "ROLL", "YAW"], plot_save_path="combined_plot.png")
