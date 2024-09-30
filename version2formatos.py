@@ -8,6 +8,7 @@ import pandas as pd #Libreria para convertir en xlsx mas facil pasandolo a un Da
 from scipy.io import savemat #Libreria para guardar a un .mat
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image
+from PIL import Image as PilImage 
 
 class Signal:
     def __init__(self, dbc_path: str):
