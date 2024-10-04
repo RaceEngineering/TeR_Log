@@ -23,10 +23,10 @@ class Signal:
         }
         # Definir la precedencia de operadores
         self.precedence = {
-            '+': 1,
-            '-': 1,
-            '*': 2,
-            '/': 2
+            '+': 2,
+            '-': 2,
+            '*': 1,
+            '/': 1
         }
 
     def _write_to_csv(self, grouped_decoded: Dict[str, List[float]], csv_final: str):
