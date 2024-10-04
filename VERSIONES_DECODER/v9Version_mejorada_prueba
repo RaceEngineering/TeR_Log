@@ -92,42 +92,47 @@ class Signal:
 
     def _apply_operation_with_precedence(self, expression: str, grouped_decoded: Dict[str, List[float]]) -> List[float]:
         """
-        Evalúa una expresión matemática respetando la precedencia de operadores.
-        La expresión debe estar en formato: 'SIGNAL1 + SIGNAL2', 'SIGNAL1 * SIGNAL2', etc.
+        Evalúa una expresión matemática respetando la precedencia de operadores utilizando
+        el algoritmo de Shunting Yard para manejar la precedencia y asociatividad.
         """
-        tokens = re.split(r'(\s+|\+|\-|\*|\/)', expression)  # Separar la expresión en partes
+        def apply_operator(operands, operator):
+            operand2 = operands.pop()
+            operand1 = operands.pop()
+            result = [self.operations[operator](a, b) for a, b in zip(operand1, operand2)]
+            operands.append(result)
+
+        tokens = re.split(r'(\s+|\+|\-|\*|\/|\(|\))', expression)  # Separar la expresión en partes
+        tokens = [token.strip() for token in tokens if token.strip()]  # Limpiar tokens vacíos
+
         output = []  # Pila para los operandos
         operators = []  # Pila para los operadores
 
         for token in tokens:
-            token = token.strip()
-            if token in self.operations:  # Si es un operador
-                while (operators and self.precedence[operators[-1]] >= self.precedence[token]):
-                    operator = operators.pop()
-                    operand2 = output.pop()
-                    operand1 = output.pop()
-                    result = [self.operations[operator](a, b) for a, b in zip(operand1, operand2)]
-                    output.append(result)
-                operators.append(token)
-            elif token in grouped_decoded:  # Si es una señal
+            if token in grouped_decoded:  # Si es una señal
                 output.append(grouped_decoded[token])
-            else:  # Si es un número
-                try:
-                    output.append([float(token)] * len(next(iter(grouped_decoded.values()))))
-                except ValueError:
-                    pass
+            elif token.isdigit() or re.match(r'\d+(\.\d+)?', token):  # Si es un número
+                output.append([float(token)] * len(next(iter(grouped_decoded.values()))))
+            elif token == '(':
+                operators.append(token)
+            elif token == ')':
+                # Aplicar todos los operadores hasta encontrar un paréntesis de apertura
+                while operators and operators[-1] != '(':
+                    apply_operator(output, operators.pop())
+                operators.pop()  # Eliminar '('
+            elif token in self.operations:
+                # Aplicar operadores con mayor o igual precedencia
+                while (operators and operators[-1] in self.operations and
+                       self.precedence[operators[-1]] >= self.precedence[token]):
+                    apply_operator(output, operators.pop())
+                operators.append(token)
 
-        # Aplicar los operadores restantes
+        # Aplicar operadores restantes
         while operators:
-            operator = operators.pop()
-            operand2 = output.pop()
-            operand1 = output.pop()
-            result = [self.operations[operator](a, b) for a, b in zip(operand1, operand2)]
-            output.append(result)
+            apply_operator(output, operators.pop())
 
         return output[0]
 
-    def add_operation(self, grouped_decoded: Dict[str, List[float]], expression: str, result_name: str) -> Dict[str, List[float]]:  
+    def add_operation(self, grouped_decoded: Dict[str, List[float]], expression: str, result_name: str) -> Dict[str, List[float]]:
         """
         Agrega una nueva columna de resultado basada en la expresión dada,
         respetando la precedencia de operadores.
