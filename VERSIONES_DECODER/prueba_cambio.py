@@ -41,18 +41,20 @@ class Signal:
         df.to_excel(xlsx_final, index=False)
 
         if plot_save_path:
-            # Carga el archivo de Excel y crea una nueva hoja para el gráfico
             workbook = load_workbook(xlsx_final)
             sheet = workbook.create_sheet("Plot")
 
-            # Abre la imagen con PIL y guárdala si es necesario
-            try:
-                img = OpenpyxlImage(plot_save_path)  # Carga la imagen
-                sheet.add_image(img, 'A1')  # Inserta la imagen en la hoja de Excel
-                workbook.save(xlsx_final)  # Guarda el archivo Excel con la imagen
-                print(f"Plot image inserted into {xlsx_final}")
-            except FileNotFoundError:
-                print(f"Plot image file '{plot_save_path}' not found. Please check the file path.")
+            # Usa el nombre de plot_save_path para guardar la imagen
+            img = PilImage.open(plot_save_path)
+            img = img.convert("RGB")
+            # No es necesario volver a guardar la imagen aquí, ya fue guardada en _plot_signals
+
+            # Inserta la imagen en el archivo Excel usando el mismo nombre
+            image = OpenpyxlImage(plot_save_path)
+            sheet.add_image(image, 'A1')
+            workbook.save(xlsx_final)
+        
+        print(f"Decoding and plot saved to {xlsx_final}")
     
     def _write_to_mat(self, grouped_decoded: Dict[str, List[float]], mat_final: str):
         savemat(mat_final, grouped_decoded)
@@ -85,7 +87,7 @@ class Signal:
         plt.grid(True)
         
         if save_path:
-            plt.savefig(save_path)  # Guarda el gráfico en el archivo PNG
+            plt.savefig(save_path)  # Guarda la imagen con el nombre pasado
             print(f"Plot saved to {save_path}")
         
         plt.show()
@@ -189,7 +191,7 @@ decoder.decode_log(
     "decoded_log.xlsx", 
     "xlsx", 
     signals_to_plot=["Pitch_Roll_Mult_Yaw_Sum", "YAW"], 
-    plot_save_path="nuevo_plot.png",  # El gráfico se guardará aquí
+    plot_save_path="imagen_plot.png",  # Aquí puedes cambiar el nombre sin problemas
     operations=[
         {"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}
     ]
