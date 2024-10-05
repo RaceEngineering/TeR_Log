@@ -83,7 +83,7 @@ class Signal:
 
     def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot: List[str] = None, plot_save_path: str = None):
     # Nuevo patrón para incluir el timestamp
-        pattern = r'\((\d+\.\d{6})\)\s+(can\d+)\s+([0-9A-Fa-f]{3})#([0-9A-Fa-f]+)'
+        pattern = r'\((\d+\.\d{6})\)\s+(\w+)\s+([0-9A-F]{3})#([0-9A-F]{2,16})'
         with open(log_path, 'r') as file:
             log = file.read()
         regex = re.compile(pattern)
@@ -93,7 +93,7 @@ class Signal:
         for match in regex.finditer(log):
             timestamp = float(match.group(1))  # Capturar el timestamp
             msg_id = int(match.group(3), 16)  # ID del mensaje en hexadecimal
-            msg_data = bytearray.fromhex(match.group(4))  # Datos del mensaje
+            msg_data = bytes.fromhex(match.group(4))  # Datos del mensaje
 
         try:
             log_decode = self.db.decode_message(msg_id, msg_data)
@@ -106,7 +106,7 @@ class Signal:
 
         grouped_decoded['Timestamp'] = timestamps  # Añadir los timestamps al diccionario
 
-    # Salida en formato adecuado
+        # Salida en formato adecuado
         if output_format == 'csv':
             self._write_to_csv(grouped_decoded, output_file)
         elif output_format == 'ascii':
