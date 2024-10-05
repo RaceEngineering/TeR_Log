@@ -12,8 +12,19 @@ from PIL import Image as PilImage
 
 class Signal:
     def __init__(self, dbc_path: str):
+        # Cargar el archivo DBC
         self.db = cantools.database.load_file(dbc_path)
-    
+        print(f"Loaded DBC: {dbc_path}")
+        
+        # Listar los mensajes y sus IDs
+        self._list_messages()
+
+    def _list_messages(self):
+        """Listar mensajes en el archivo DBC para verificación."""
+        print("Messages in DBC:")
+        for message in self.db.messages:
+            print(f"ID: {message.frame_id} ({hex(message.frame_id)}), Name: {message.name}")
+
     def _write_to_csv(self, grouped_decoded: Dict[str, List[float]], csv_final: str):
         with open(csv_final, mode='w', newline='') as csv_file:
             writer = csv.writer(csv_file)
@@ -44,7 +55,7 @@ class Signal:
             workbook.save(xlsx_final)
         
         print(f"Decoding and plot saved to {xlsx_final}")
-    
+
     def _write_to_mat(self, grouped_decoded: Dict[str, List[float]], mat_final: str):
         savemat(mat_final, grouped_decoded)
         print(f"Decoding completed and saved to {mat_final}")
@@ -82,8 +93,8 @@ class Signal:
         plt.show()
 
     def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot: List[str] = None, plot_save_path: str = None):
-    # Nuevo patrón para incluir el timestamp
-        pattern = r'\((\d+\.\d{6})\)\s+(\w+)\s+([0-9A-F]{3})#([0-9A-F]{2,16})'
+        # Nuevo patrón para incluir el timestamp y otros detalles
+        pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3,8})#(?P<data>[0-9A-F]{2,16})'
         with open(log_path, 'r') as file:
             log = file.read()
         regex = re.compile(pattern)
@@ -95,14 +106,21 @@ class Signal:
             msg_id = int(match.group(3), 16)  # ID del mensaje en hexadecimal
             msg_data = bytes.fromhex(match.group(4))  # Datos del mensaje
 
-        try:
-            log_decode = self.db.decode_message(msg_id, msg_data)
-            timestamps.append(timestamp)  # Almacenar el timestamp
-            for key, value in log_decode.items():
-                if isinstance(value, (int, float)):
-                    grouped_decoded[key].append(value)
-        except KeyError:
-            print(f"Mensaje CAN con ID {msg_id} no encontrado en el archivo DBC.")
+            try:
+                # Se busca el mensaje por ID en el archivo DBC
+                message = self.db.get_message_by_frame_id(msg_id)
+                if message:
+                    log_decode = message.decode(msg_data)
+                    timestamps.append(timestamp)  # Almacenar el timestamp
+                    for key, value in log_decode.items():
+                        if isinstance(value, (int, float)):
+                            grouped_decoded[key].append(value)
+                else:
+                    print(f"Mensaje CAN con ID {msg_id} no encontrado en el archivo DBC.")
+            except KeyError:
+                print(f"Mensaje CAN con ID {msg_id} no encontrado en el archivo DBC.")
+            except Exception as e:
+                print(f"Error al decodificar el mensaje con ID {msg_id}: {e}")
 
         grouped_decoded['Timestamp'] = timestamps  # Añadir los timestamps al diccionario
 
@@ -124,3 +142,4 @@ class Signal:
 # Uso del código adaptado
 decoder = Signal("./TER.dbc")
 decoder.decode_log("RUN1.log", "decoded_log.xlsx", "xlsx", signals_to_plot=["PITCH", "ROLL", "YAW"], plot_save_path="combined_plot.png")
+
