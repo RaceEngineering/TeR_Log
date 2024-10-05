@@ -210,6 +210,10 @@ BO_ 40 InverterInfo: 8 ECU
    SG_ leftMotorTemp : 32|8@1+ (1,0) [0|1] "" Vector__XXX
    SG_ rightMotorTemp : 40|8@1+ (1,0) [0|1] "" Vector__XXX
 
+BO_ 2147483930 Front_Temps: 8 FRONT_AXLE
+   SG_ TempL : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
+   SG_ TempR : 16|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
+
 CM_ BU_ SteeringWheel "The Steering Input MOdule";
 CM_ BU_ PEDAL "The Drivers Sensor Board";
 CM_ BU_ TER_CMDS "The Command Subsystem For TeR Vehicle";
@@ -219,7 +223,7 @@ CM_ BU_ LVBMS "The LV battery Management System";
 CM_ BU_ ECU "The VCU for TeR Vehicle";
 CM_ BU_ CHARGER "The Control Module for TeR Charger";
 CM_ BO_ 1 "(0-63)No Args, (64-127)OnOff,(128-191)Value,(192-255)Custom";
-VAL_ 1 CMD 14 "resetBMS" 1 "Calibrate_APPS_min" 2 "Calibrate_APPS_max" 5 "Calibrate_STEER_Leftest" 6 "Calibrate_STEER_Rightest" 8 "discharge" 9 "precharge" 10 "beep" 11 "ready2Drive" 193 "setLimits" 194 "setDynamicConfig" 64 "switchRefri" 65 "switchScs" 0 "charge";
+VAL_ 1 CMD 14 "resetBMS" 1 "Calibrate_APPS_min" 2 "Calibrate_APPS_max" 5 "Calibrate_STEER_Leftest" 6 "Calibrate_STEER_Rightest" 8 "discharge" 9 "precharge" 10 "beep" 11 "ready2Drive" 193 "setLimits" 194 "setDynamicConfig" 64 "switchRefri" 65 "switchScs" 0 "charge" 12 "startLog" 13 "endLog" 195 "setTime";
 VAL_ 1 ONOFF 0 "OFF" 1 "ON";
 VAL_ 18 VOLTAGES_OK 0 "FAULT" 1 "OK";
 VAL_ 18 TEMPS_OK 0 "FAULT" 1 "OK";
