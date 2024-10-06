@@ -65,14 +65,15 @@ class Signal:
             img = PilImage.open(plot_save_path)
             img = img.convert("RGB")
             img.save("imagen_xlsx.png")  # Guardar la imagen como archivo temporal
-    
+        
             # Insertar la imagen en la hoja de cálculo
             image = OpenpyxlImage("imagen_xlsx.png")
             sheet.add_image(image, 'A1')
             workbook.save(xlsx_final)
-            print(f"Plot added to Excel sheet successfully.")
         else:
             print(f"Image {plot_save_path} could not be found or opened.")
+    
+        print(f"Decoding and plot saved to {xlsx_final}")
 
     
     def _write_to_mat(self, grouped_decoded: Dict[str, List[float]], mat_final: str):
@@ -230,6 +231,6 @@ class Signal:
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
     decoder.decode_log("RUN2.log", "RUN2.xlsx", "xlsx", 
-    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="RPM_plot.png")
+    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="RP_plot.png")
 
     # operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}]
