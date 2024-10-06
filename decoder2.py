@@ -11,22 +11,22 @@ from openpyxl.drawing.image import Image as OpenpyxlImage
 from PIL import Image as PilImage
 import operator
 
+
 class Signal:
     def __init__(self, dbc_path: str):
         # Cargar el archivo DBC
         self.db = cantools.database.load_file(dbc_path)
         print(f"Loaded DBC: {dbc_path}")
 
-        # Operadores básicos
+        # Imprimir todos los IDs y sus nombres de mensajes en el DBC
+        self._print_message_ids()
+         # Operadores básicos
         self.operations = {
             '+': operator.add,
             '-': operator.sub,
             '*': operator.mul,
             '/': operator.truediv
         }
-
-        # Imprimir los IDs de los mensajes en el DBC
-        self._print_message_ids()
 
     def _print_message_ids(self):
         """Imprime los IDs de los mensajes definidos en el DBC."""
@@ -35,12 +35,16 @@ class Signal:
             print(f"ID: {message.frame_id} ({message.name})")
 
     def _write_to_csv(self, grouped_decoded: Dict[str, List[float]], csv_final: str):
+        # Crear el archivo CSV y escribir los datos
         with open(csv_final, mode='w', newline='') as csv_file:
             writer = csv.writer(csv_file)
+            # Escribir encabezados
+            writer.writerow(["Signal", "Values"])
             for key, values in grouped_decoded.items():
-                writer.writerow([key, values])
-        print(f"Decoding completed and saved to {csv_final}")
+                writer.writerow([key] + values)
 
+        print(f"Decoding completed and saved to {csv_final}")
+    
     def _write_to_xlsx(self, grouped_decoded: Dict[str, List[float]], xlsx_final:str, plot_save_path:str = None):
         df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in grouped_decoded.items()]))
         df.to_excel(xlsx_final, index=False)
@@ -75,7 +79,7 @@ class Signal:
                     row.append(str(value))
                 ascii_file.write("\t".join(row) + "\n")
         print(f"Decoding completed and saved to {ascii_final}")
-
+    
     def _plot_signals(self, grouped_decoded: Dict[str, List[float]], signal_names: List[str], save_path: str = None):
         plt.figure(figsize=(10, 5))
         for signal_name in signal_names:
@@ -94,7 +98,7 @@ class Signal:
             print(f"Plot saved to {save_path}")
         
         plt.show()
-
+    
     def _apply_operation(self, expression: str, grouped_decoded: Dict[str, List[float]]) -> List[float]:
         """
         Evalúa una expresión matemática que incluye operaciones entre señales decodificadas.
@@ -132,27 +136,33 @@ class Signal:
         result = self._apply_operation(expression, grouped_decoded)
         grouped_decoded[result_name] = result  # Añadir el resultado con un nuevo nombre
         return grouped_decoded
-
+    
     def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot: List[str] = None, plot_save_path: str = None, operations: List[Dict[str, str]] = None):
-        """
-        Decodifica el log y genera los archivos de salida. Si se proporcionan operaciones, se aplican
-        y los resultados se añaden a las señales decodificadas sin modificar los valores originales.
-        """
         # Patrón regex para capturar timestamp, interfaz, ID (3 caracteres) y datos
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})#(?P<data>[0-9A-F]{2,16})'
         
+        # Abrir en modo lectura el log
         with open(log_path, 'r') as file:
             log = file.read()
-        regex = re.compile(pattern)
-        grouped_decoded = defaultdict(list)
         
+        # Compilar regex
+        regex = re.compile(pattern)
+
+        # Diccionario de mensajes decodificados
+        grouped_decoded = defaultdict(list)
+
+        # Hacer los matches:
         for match in regex.finditer(log):
-            msg_id_str = match.group("id")  # ID del mensaje como string (3 caracteres)
+            msg_id_str = match.group("id")  # ID del mensaje como string
             msg_id = int(msg_id_str, 16)  # Convertir ID a entero
             msg_data = bytearray.fromhex(match.group("data"))  # Convertir datos a bytes
 
             try:
+                # Decodificar con el archivo DBC
                 log_decode = self.db.decode_message(msg_id, msg_data)
+                print(f"Decoded Message ID: {msg_id}, Data: {msg_data.hex()} -> {log_decode}")
+
+                # Agrupar los valores decodificados
                 for key, value in log_decode.items():
                     if isinstance(value, (int, float)):
                         grouped_decoded[key].append(value)
@@ -187,15 +197,12 @@ class Signal:
             self._plot_signals(grouped_decoded, signals_to_plot, save_path=plot_save_path)
 
 # Uso del código
-decoder = Signal("./TER.dbc")
-decoder.decode_log(
-    "RUN0.log", 
-    "prueba.csv", 
-    "csv", 
+if __name__ == "__main__":
+    decoder = Signal("./TER.dbc")
+    decoder.decode_log("RUN2.log", "decoderPrueba.csv", "csv", 
     signals_to_plot=["PITCH", "ROLL", "YAW"], 
-    plot_save_path="combined_plot.png", 
-    operations=[
+    plot_save_path="combined_plot.png", operations=[
         {"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},
         {"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"}
     ]
-)
+    )
