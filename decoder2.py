@@ -29,10 +29,10 @@ class Signal:
         }
         # Definir la precedencia de operadores
         self.precedence = {
-            '+': 2,
-            '-': 2,
-            '*': 1,
-            '/': 1
+            '+': 1,
+            '-': 1,
+            '*': 2,
+            '/': 2
         }
 
     def _print_message_ids(self):
