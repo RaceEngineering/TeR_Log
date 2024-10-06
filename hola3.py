@@ -22,13 +22,13 @@ class Signal:
         print(f"Decoding completed and saved to {csv_final}")
 
     def decode_log(self, log_path: str, csv_final: str):
-        # Patrón regex para capturar timestamp, interfaz, ID y datos
+        # Patrón regex para capturar timestamp, interfaz, ID (3 caracteres) y datos
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})#(?P<data>[0-9A-F]{2,16})'
-       
+        
         # Abrir en modo lectura el log
         with open(log_path, 'r') as file:
             log = file.read()
-       
+        
         # Compilar regex
         regex = re.compile(pattern)
 
@@ -37,7 +37,8 @@ class Signal:
 
         # Hacer los matches:
         for match in regex.finditer(log):
-            msg_id = int(match.group("id"), 16)  # ID del mensaje en hexadecimal
+            msg_id_str = match.group("id")  # ID del mensaje como string
+            msg_id = int(msg_id_str, 16)  # Convertir ID a entero
             msg_data = bytearray.fromhex(match.group("data"))  # Convertir datos a bytes
 
             try:
@@ -49,11 +50,16 @@ class Signal:
                 for key, value in log_decode.items():
                     if isinstance(value, (int, float)):
                         grouped_decoded[key].append(value)
+                    else:
+                        print(f"Warning: Signal '{key}' has non-numeric value '{value}' in message ID {msg_id}. Skipping this value.")
+            except KeyError:
+                print(f"Warning: Message ID {msg_id_str} (decimal {msg_id}) is not defined in the DBC.")
             except Exception as e:
-                print(f"Error decoding message with ID {msg_id}: {e}")
+                print(f"Error decoding message with ID {msg_id_str} (decimal {msg_id}): {e}")
 
         self._write_to_csv(grouped_decoded, csv_final)
 
 # Uso del código
-decoder = Signal("./TER.dbc")
-decoder.decode_log("RUN2.log", "decoded_log.csv")
+if __name__ == "__main__":
+    decoder = Signal("./TER.dbc")
+    decoder.decode_log("RUN2.log", "decoded_log.csv")
