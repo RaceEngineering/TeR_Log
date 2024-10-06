@@ -27,6 +27,13 @@ class Signal:
             '*': operator.mul,
             '/': operator.truediv
         }
+        # Definir la precedencia de operadores
+        self.precedence = {
+            '+': 2,
+            '-': 2,
+            '*': 1,
+            '/': 1
+        }
 
     def _print_message_ids(self):
         """Imprime los IDs de los mensajes definidos en el DBC."""
@@ -99,41 +106,54 @@ class Signal:
         
         plt.show()
     
-    def _apply_operation(self, expression: str, grouped_decoded: Dict[str, List[float]]) -> List[float]:
+    def _apply_operation_with_precedence(self, expression: str, grouped_decoded: Dict[str, List[float]]) -> List[float]:
         """
-        Evalúa una expresión matemática que incluye operaciones entre señales decodificadas.
-        La expresión debe estar en formato: 'SIGNAL1 + SIGNAL2', 'SIGNAL1 * SIGNAL2', etc.
+        Evalúa una expresión matemática respetando la precedencia de operadores utilizando
+        el algoritmo de Shunting Yard para manejar la precedencia y asociatividad.
         """
-        tokens = re.split(r'(\s+|\+|\-|\*|\/)', expression)  # Separar la expresión en partes
-        stack = []
+        def apply_operator(operands, operator):
+            operand2 = operands.pop()
+            operand1 = operands.pop()
+            result = [self.operations[operator](a, b) for a, b in zip(operand1, operand2)]
+            operands.append(result)
+
+        tokens = re.split(r'(\s+|\+|\-|\*|\/|\(|\))', expression)  # Separar la expresión en partes
+        tokens = [token.strip() for token in tokens if token.strip()]  # Limpiar tokens vacíos
+
+        output = []  # Pila para los operandos
+        operators = []  # Pila para los operadores
 
         for token in tokens:
-            token = token.strip()
-            if token in self.operations:  # Si es un operador
-                stack.append(token)
-            elif token in grouped_decoded:  # Si es una señal
-                stack.append(grouped_decoded[token])
-            else:  # Si es un número
-                try:
-                    stack.append([float(token)] * len(next(iter(grouped_decoded.values()))))
-                except ValueError:
-                    pass
+            if token in grouped_decoded:  # Si es una señal
+                output.append(grouped_decoded[token])
+            elif token.isdigit() or re.match(r'\d+(\.\d+)?', token):  # Si es un número
+                output.append([float(token)] * len(next(iter(grouped_decoded.values()))))
+            elif token == '(':
+                operators.append(token)
+            elif token == ')':
+                # Aplicar todos los operadores hasta encontrar un paréntesis de apertura
+                while operators and operators[-1] != '(':
+                    apply_operator(output, operators.pop())
+                operators.pop()  # Eliminar '('
+            elif token in self.operations:
+                # Aplicar operadores con mayor o igual precedencia
+                while (operators and operators[-1] in self.operations and
+                       self.precedence[operators[-1]] >= self.precedence[token]):
+                    apply_operator(output, operators.pop())
+                operators.append(token)
 
-        # Evalúa la expresión en la pila
-        while len(stack) > 1:
-            operand1 = stack.pop(0)
-            operator = stack.pop(0)
-            operand2 = stack.pop(0)
-            result = [self.operations[operator](a, b) for a, b in zip(operand1, operand2)]
-            stack.insert(0, result)
+        # Aplicar operadores restantes
+        while operators:
+            apply_operator(output, operators.pop())
 
-        return stack[0]
+        return output[0]
 
     def add_operation(self, grouped_decoded: Dict[str, List[float]], expression: str, result_name: str) -> Dict[str, List[float]]:
         """
-        Agrega una nueva columna de resultado basada en la expresión dada.
+        Agrega una nueva columna de resultado basada en la expresión dada,
+        respetando la precedencia de operadores.
         """
-        result = self._apply_operation(expression, grouped_decoded)
+        result = self._apply_operation_with_precedence(expression, grouped_decoded)
         grouped_decoded[result_name] = result  # Añadir el resultado con un nuevo nombre
         return grouped_decoded
     
@@ -203,6 +223,7 @@ if __name__ == "__main__":
     signals_to_plot=["PITCH", "ROLL", "YAW"], 
     plot_save_path="combined_plot.png", operations=[
         {"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},
-        {"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"}
+        {"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},
+        {"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}
     ]
     )
