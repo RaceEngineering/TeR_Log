@@ -163,7 +163,7 @@ class Signal:
     
     def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot: List[str] = None, plot_save_path: str = None, operations: List[Dict[str, str]] = None):
         # Patrón regex para capturar timestamp, interfaz, ID (3 caracteres) y datos
-        pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})#(?P<data>[0-9A-F]{2,16})'
+        pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
         # Abrir en modo lectura el log
         with open(log_path, 'r') as file:
@@ -179,15 +179,21 @@ class Signal:
         for match in regex.finditer(log):
             msg_id_str = match.group("id")  # ID del mensaje como string
             msg_id = int(msg_id_str, 16)  # Convertir ID a entero
-            msg_data = bytearray.fromhex(match.group("data"))  # Convertir datos a bytes
+
+            try:
+                # Intentar convertir los datos a bytes
+                msg_data = bytearray.fromhex(match.group("data"))
+            except ValueError:
+                print(f"Error: Los datos '{match.group('data')}' no son válidos como hexadecimal. Se omite este mensaje.")
+                continue  # Saltar al siguiente mensaje si ocurre un error en la conversión
 
             try:
                 # Decodificar con el archivo DBC
-                log_decode = self.db.decode_message(msg_id, msg_data)
-                print(f"Decoded Message ID: {msg_id}, Data: {msg_data.hex()} -> {log_decode}")
+                 log_decode = self.db.decode_message(msg_id, msg_data)
+                 print(f"Decoded Message ID: {msg_id}, Data: {msg_data.hex()} -> {log_decode}")
 
                 # Agrupar los valores decodificados
-                for key, value in log_decode.items():
+                 for key, value in log_decode.items():
                     if isinstance(value, (int, float)):
                         grouped_decoded[key].append(value)
                     else:
@@ -196,6 +202,7 @@ class Signal:
                 print(f"Warning: Message ID {msg_id_str} (decimal {msg_id}) is not defined in the DBC.")
             except Exception as e:
                 print(f"Error decoding message with ID {msg_id_str} (decimal {msg_id}): {e}")
+
 
         # Aplicar operaciones si se proporcionan
         if operations:
@@ -223,6 +230,5 @@ class Signal:
 # Uso del código
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
-    decoder.decode_log("RUN0.log", "RUN0.mat", "mat", 
-    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="combined_plot.png")
+    decoder.decode_log("RUN8.log", "RUN8.csv","csv", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="combined_plot.png")
     #, operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}])
