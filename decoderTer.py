@@ -10,7 +10,6 @@ from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as OpenpyxlImage
 from PIL import Image as PilImage
 import operator
-import os
 
 
 class Signal:
@@ -53,29 +52,24 @@ class Signal:
 
         print(f"Decoding completed and saved to {csv_final}")
     
-    def _write_to_xlsx(self, grouped_decoded: Dict[str, List[float]], xlsx_final: str, plot_save_path: str = None):
+    def _write_to_xlsx(self, grouped_decoded: Dict[str, List[float]], xlsx_final:str, plot_save_path:str = None):
         df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in grouped_decoded.items()]))
         df.to_excel(xlsx_final, index=False)
 
-        if plot_save_path and os.path.exists(plot_save_path):
+        if plot_save_path:
             workbook = load_workbook(xlsx_final)
             sheet = workbook.create_sheet("Plot")
 
-            # Abrir la imagen para agregarla
             img = PilImage.open(plot_save_path)
             img = img.convert("RGB")
-            img.save("imagen_xlsx.png")  # Guardar la imagen como archivo temporal
-        
-            # Insertar la imagen en la hoja de cálculo
+            img.save("imagen_xlsx.png")
+
             image = OpenpyxlImage("imagen_xlsx.png")
             sheet.add_image(image, 'A1')
             workbook.save(xlsx_final)
-        else:
-            print(f"Image {plot_save_path} could not be found or opened.")
-    
+        
         print(f"Decoding and plot saved to {xlsx_final}")
-
-    
+        
     def _write_to_mat(self, grouped_decoded: Dict[str, List[float]], mat_final: str):
         savemat(mat_final, grouped_decoded)
         print(f"Decoding completed and saved to {mat_final}")
@@ -107,9 +101,8 @@ class Signal:
         plt.grid(True)
         
         if save_path:
-            plt.savefig(save_path, format='png')  # Asegúrate de que el formato es válido
+            plt.savefig(save_path)
             print(f"Plot saved to {save_path}")
-
         
         plt.show()
     
@@ -231,6 +224,6 @@ class Signal:
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
     decoder.decode_log("RUN2.log", "RUN2.xlsx", "xlsx", 
-    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="RP_plot.png",
-    operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}]
-)
+    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="combined_plot.png")
+
+    # operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}]
