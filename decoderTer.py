@@ -69,7 +69,7 @@ class Signal:
             workbook.save(xlsx_final)
         
         print(f"Decoding and plot saved to {xlsx_final}")
-        
+
     def _write_to_mat(self, grouped_decoded: Dict[str, List[float]], mat_final: str):
         savemat(mat_final, grouped_decoded)
         print(f"Decoding completed and saved to {mat_final}")
@@ -224,6 +224,4 @@ class Signal:
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
     decoder.decode_log("RUN2.log", "RUN2.xlsx", "xlsx", 
-    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="combined_plot.png")
-
-    # operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}]
+    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="combined_plot.png", operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}])
