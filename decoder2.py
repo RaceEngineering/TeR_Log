@@ -219,7 +219,7 @@ class Signal:
 # Uso del código
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
-    decoder.decode_log("RUN2.log", "decoderPrueba.xlsx", "xlsx", 
+    decoder.decode_log("RUN2.log", "Precedence.xlsx", "xlsx", 
     signals_to_plot=["PITCH", "ROLL", "YAW"], 
     plot_save_path="combined_plot.png", operations=[
         {"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},
