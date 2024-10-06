@@ -58,29 +58,19 @@ class Signal:
         df.to_excel(xlsx_final, index=False)
 
         if plot_save_path and os.path.exists(plot_save_path):
-            try:
-                # Cargar el archivo Excel
-                workbook = load_workbook(xlsx_final)
-                sheet = workbook.create_sheet("Plot")
+            workbook = load_workbook(xlsx_final)
+            sheet = workbook.create_sheet("Plot")
 
-                # Asegurarse de que la imagen está en formato PNG y se guarda correctamente
-                img = PilImage.open(plot_save_path)
-                img = img.convert("RGB")
-                temp_image_path = "imagen_xlsx.png"
-                img.save(temp_image_path)  # Guardar la imagen como archivo temporal
-
-                # Insertar la imagen en la hoja de cálculo
-                image = OpenpyxlImage(temp_image_path)
-                sheet.add_image(image, 'A1')  # Insertar imagen en la celda A1
-
-                # Guardar el archivo Excel con la imagen insertada
-                workbook.save(xlsx_final)
-                print(f"Plot added to Excel sheet successfully.")
-            
-                # Eliminar la imagen temporal
-                os.remove(temp_image_path)
-            except Exception as e:
-                print(f"Error adding image to Excel: {e}")
+            # Abrir la imagen para agregarla
+            img = PilImage.open(plot_save_path)
+            img = img.convert("RGB")
+            img.save("imagen_xlsx.png")  # Guardar la imagen como archivo temporal
+    
+            # Insertar la imagen en la hoja de cálculo
+            image = OpenpyxlImage("imagen_xlsx.png")
+            sheet.add_image(image, 'A1')
+            workbook.save(xlsx_final)
+            print(f"Plot added to Excel sheet successfully.")
         else:
             print(f"Image {plot_save_path} could not be found or opened.")
 
@@ -240,9 +230,6 @@ class Signal:
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
     decoder.decode_log("RUN2.log", "RUN2.xlsx", "xlsx", 
-    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="RPM_plot.png", 
-    operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},
-                {"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},
-                {"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}
-                ]
-    )
+    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="RPM_plot.png")
+
+    # operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}]
