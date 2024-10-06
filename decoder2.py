@@ -112,21 +112,24 @@ class Signal:
         el algoritmo de Shunting Yard para manejar la precedencia y asociatividad.
         """
         def apply_operator(operands, operator):
-            operand2 = operands.pop()
-            operand1 = operands.pop()
-            result = [self.operations[operator](a, b) for a, b in zip(operand1, operand2)]
-            operands.append(result)
+                """Aplica un operador a los dos operandos en la pila."""
+                operand2 = operands.pop()
+                operand1 = operands.pop()
+                result = [self.operations[operator](a, b) for a, b in zip(operand1, operand2)]
+                operands.append(result)
 
-        tokens = re.split(r'(\s+|\+|\-|\*|\/|\(|\))', expression)  # Separar la expresión en partes
-        tokens = [token.strip() for token in tokens if token.strip()]  # Limpiar tokens vacíos
+        # Separar la expresión en tokens, teniendo en cuenta los operadores y paréntesis
+        tokens = re.split(r'(\s+|\+|\-|\*|\/|\(|\))', expression)
+        tokens = [token.strip() for token in tokens if token.strip()]  # Eliminar espacios vacíos
 
+        # Pilas para el algoritmo de Shunting Yard
         output = []  # Pila para los operandos
         operators = []  # Pila para los operadores
 
         for token in tokens:
             if token in grouped_decoded:  # Si es una señal
-                output.append(grouped_decoded[token])
-            elif token.isdigit() or re.match(r'\d+(\.\d+)?', token):  # Si es un número
+             output.append(grouped_decoded[token])
+            elif re.match(r'\d+(\.\d+)?', token):  # Si es un número
                 output.append([float(token)] * len(next(iter(grouped_decoded.values()))))
             elif token == '(':
                 operators.append(token)
@@ -138,15 +141,16 @@ class Signal:
             elif token in self.operations:
                 # Aplicar operadores con mayor o igual precedencia
                 while (operators and operators[-1] in self.operations and
-                       self.precedence[operators[-1]] >= self.precedence[token]):
+                    self.precedence[operators[-1]] <= self.precedence[token]):
                     apply_operator(output, operators.pop())
                 operators.append(token)
 
-        # Aplicar operadores restantes
+    # Aplicar los operadores restantes
         while operators:
             apply_operator(output, operators.pop())
 
         return output[0]
+
 
     def add_operation(self, grouped_decoded: Dict[str, List[float]], expression: str, result_name: str) -> Dict[str, List[float]]:
         """
