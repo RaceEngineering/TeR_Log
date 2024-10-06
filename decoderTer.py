@@ -240,6 +240,4 @@ class Signal:
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
     decoder.decode_log("RUN2.log", "RUN2.xlsx", "xlsx", 
-    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="RPM_plot.png")
-
-    # operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}]
+    signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], plot_save_path="RPM_plot.png", operations=[{"expression": "PITCH + ROLL", "result_name": "Pitch_Roll_Sum"},{"expression": "PITCH - YAW", "result_name": "Pitch_Yaw_Diff"},{"expression": "PITCH + ROLL * YAW", "result_name": "Pitch_Roll_Mult_Yaw_Sum"}])
