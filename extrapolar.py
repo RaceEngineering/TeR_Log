@@ -190,7 +190,7 @@ class Signal:
                 timestamps.append(timestamp)
             except ValueError:
                 print(f"Error: Los datos '{match.group('data')}' no son válidos como hexadecimal. Se omite este mensaje.")
-                continue  # Saltar al siguiente mensaje si ocurre un error en la conversión
+                pass
 
             try:
                 # Decodificar con el archivo DBC
