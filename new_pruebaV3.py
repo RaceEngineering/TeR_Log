@@ -123,8 +123,9 @@ class Signal:
         full_index = np.arange(min(df['Timestamp']), max(df['Timestamp']), step=0.01)  # Define el intervalo adecuado
         df = df.set_index('Timestamp').reindex(full_index).reset_index().rename(columns={'index': 'Timestamp'})
 
-        # **Interpolar los datos para eliminar celdas en blanco (NaN)**
-        df.interpolate(method='linear', axis=0, inplace=True)
+        # **Interpolar señal por señal para eliminar celdas en blanco (NaN)**
+        for signal in all_signals:
+            df[signal].interpolate(method='linear', inplace=True)
 
         # Guardar en el formato solicitado
         if output_format == 'xlsx':
