@@ -31,29 +31,22 @@ class Signal:
     
     def _write_to_excel_line_by_line(self, df: pd.DataFrame, excel_final: str):
         """Escribir línea por línea en Excel usando xlsxwriter."""
-
-        # Reemplazar NaN e inf por un valor adecuado
-        df_clean = df.fillna('').replace([np.inf, -np.inf], '')
-
-        # Crear el archivo Excel
+        df_clean = df.fillna('').replace([np.inf, -np.inf], '')  # Reemplazar NaN e inf por cadena vacía
         workbook = xlsxwriter.Workbook(excel_final)
         worksheet = workbook.add_worksheet("Data")
 
-        # Escribir encabezados
         for col_num, value in enumerate(df_clean.columns):
             worksheet.write(0, col_num, value)
 
-        # Escribir filas una por una
         for row_num, row in enumerate(df_clean.itertuples(index=False), 1):
             worksheet.write_row(row_num, 0, row)
-
-        # Guardar y cerrar el archivo Excel
+        
         workbook.close()
+
         print(f"Decoding completed and saved to {excel_final}")
 
     def decode_log(self, log_path: str, output_file: str, output_format: str):
         """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
-        # Patrón regex para capturar timestamp, interfaz, ID (3 caracteres) y datos
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
         # Abrir el log
@@ -131,6 +124,6 @@ class Signal:
 if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
-        decoder.decode_log("RUN4.log", "nuevo_pruebaV3.xlsx", "xlsx")
+        decoder.decode_log("RUN4.log", "nuevo_pruebaV3.csv", "csv")  # Guardar en CSV
     except Exception as e:
         print(f"Error during execution: {e}")

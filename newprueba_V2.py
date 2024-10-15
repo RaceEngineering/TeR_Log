@@ -149,6 +149,6 @@ if __name__ == "__main__":
     # Asegúrate de usar las rutas correctas para el archivo DBC y el log
     try:
         decoder = Signal("./TER.dbc")
-        decoder.decode_log("RUN4.log", "nuevo_pruebaV2.xlsx", "xlsx")
+        decoder.decode_log("RUN4.log", "nuevo_pruebaV2.csv", "csv")
     except Exception as e:
         print(f"Error during execution: {e}")
