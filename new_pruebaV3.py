@@ -113,9 +113,9 @@ class Signal:
             df[signal] = df[signal].interpolate(method='linear', limit_direction='both')
 
         # Guardar en el formato solicitado
-        if output_format == 'xlsx':
-           self._write_to_excel_line_by_line(df, output_file)
-        elif output_format == 'csv':
+        if output_format.lower() == 'xlsx':
+            self._write_to_excel_line_by_line(df, output_file)
+        elif output_format.lower() == 'csv':
             self._write_to_csv(df, output_file)
         else:
             print("Unsupported format")
@@ -124,6 +124,7 @@ class Signal:
 if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
-        decoder.decode_log("RUN4.log", "nuevo_pruebaV3.csv", "csv")  # Guardar en CSV
+        decoder.decode_log("RUN4.log", "RUN4_timestamps_interpolados.xlsx", "xlsx")  # Guardar en CSV
     except Exception as e:
         print(f"Error during execution: {e}")
+
