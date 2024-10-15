@@ -2,15 +2,7 @@ import re
 import cantools
 import csv
 from collections import defaultdict
-from typing import List, Dict
-import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.io import savemat
-from openpyxl import load_workbook
-from openpyxl.drawing.image import Image as OpenpyxlImage
-from PIL import Image as PilImage
-import zipfile
-from openpyxl import Workbook
 import xlsxwriter
 import numpy as np
 
@@ -38,32 +30,28 @@ class Signal:
         df.to_csv(csv_final, index=False)
         print(f"Decoding completed and saved to {csv_final}")
     
-    import zipfile
-
-    from openpyxl import Workbook
-
     def _write_to_excel_line_by_line(self, df: pd.DataFrame, excel_final: str):
-            """Escribir línea por línea en Excel usando xlsxwriter."""
+        """Escribir línea por línea en Excel usando xlsxwriter."""
 
-            # Reemplazar NaN e inf por un valor adecuado (por ejemplo, una cadena vacía o un número)
-            df_clean = df.fillna('').replace([np.inf, -np.inf], '')
+        # Reemplazar NaN e inf por un valor adecuado (por ejemplo, una cadena vacía o un número)
+        df_clean = df.fillna('').replace([np.inf, -np.inf], '')
 
-            # Crear el archivo Excel
-            workbook = xlsxwriter.Workbook(excel_final)
-            worksheet = workbook.add_worksheet("Data")
+        # Crear el archivo Excel
+        workbook = xlsxwriter.Workbook(excel_final)
+        worksheet = workbook.add_worksheet("Data")
 
-            # Escribir encabezados
-            for col_num, value in enumerate(df_clean.columns):
-                worksheet.write(0, col_num, value)
+        # Escribir encabezados
+        for col_num, value in enumerate(df_clean.columns):
+            worksheet.write(0, col_num, value)
 
-            # Escribir filas una por una (empezando desde la fila 1, después del encabezado)
-            for row_num, row in enumerate(df_clean.itertuples(index=False), 1):
-                worksheet.write_row(row_num, 0, row)
+        # Escribir filas una por una (empezando desde la fila 1, después del encabezado)
+        for row_num, row in enumerate(df_clean.itertuples(index=False), 1):
+            worksheet.write_row(row_num, 0, row)
 
-            # Guardar y cerrar el archivo Excel
-            workbook.close()
+        # Guardar y cerrar el archivo Excel
+        workbook.close()
 
-            print(f"Decoding completed and saved to {excel_final}")
+        print(f"Decoding completed and saved to {excel_final}")
 
 
     def decode_log(self, log_path: str, output_file: str, output_format: str):
@@ -101,22 +89,16 @@ class Signal:
                 # Intentar convertir los datos hexadecimales
                 msg_data = bytearray.fromhex(match.group("data"))
             except ValueError:
-                #print(f"Error: Los datos '{match.group('data')}' no son válidos como hexadecimal. Se omite este mensaje.")
                 continue
 
             try:
                 # Decodificar el mensaje con el DBC
                 log_decode = self.db.decode_message(msg_id, msg_data)
-                #print(f"Decoded Message ID: {msg_id}, Data: {msg_data.hex()} -> {log_decode}")
 
                 # Agrupar los valores decodificados
                 for key, value in log_decode.items():
                     if isinstance(value, (int, float)):
                         grouped_decoded[timestamp][key] = value
-                    #else:
-                        #print(f"Warning: Signal '{key}' has non-numeric value '{value}' in message ID {msg_id}.")
-            #except KeyError:
-                #print(f"Warning: Message ID {msg_id_str} (decimal {msg_id}) is not defined in the DBC.")
             except Exception as e:
                 print(f"Error decoding message with ID {msg_id_str} (decimal {msg_id}): {e}")
 
@@ -135,7 +117,13 @@ class Signal:
 
         # Crear DataFrame de Pandas
         df = pd.DataFrame(data)
-        
+
+        # **Asegurar la continuidad de los timestamps**
+        # Rellenar los gaps en los timestamps para que no haya espacios vacíos
+        full_index = np.arange(min(df['Timestamp']), max(df['Timestamp']), step=0.01)  # Define el intervalo adecuado
+        df = df.set_index('Timestamp').reindex(full_index).reset_index().rename(columns={'index': 'Timestamp'})
+
+        # **Interpolar los datos para eliminar celdas en blanco (NaN)**
         df.interpolate(method='linear', axis=0, inplace=True)
 
         # Guardar en el formato solicitado
