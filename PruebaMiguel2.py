@@ -75,3 +75,9 @@ class Signal:
 if __name__ == "__main__":
     decoder = Signal("./TER.dbc")
     decoder.decode_log("RUN10.log", "RUN10.xlsx")
+
+
+
+
+
+
