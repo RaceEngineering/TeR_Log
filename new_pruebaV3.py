@@ -1,8 +1,7 @@
 import re
 import cantools
-import csv
-from collections import defaultdict
 import pandas as pd
+from collections import defaultdict
 import xlsxwriter
 import numpy as np
 
@@ -33,7 +32,7 @@ class Signal:
     def _write_to_excel_line_by_line(self, df: pd.DataFrame, excel_final: str):
         """Escribir línea por línea en Excel usando xlsxwriter."""
 
-        # Reemplazar NaN e inf por un valor adecuado (por ejemplo, una cadena vacía o un número)
+        # Reemplazar NaN e inf por un valor adecuado
         df_clean = df.fillna('').replace([np.inf, -np.inf], '')
 
         # Crear el archivo Excel
@@ -44,15 +43,13 @@ class Signal:
         for col_num, value in enumerate(df_clean.columns):
             worksheet.write(0, col_num, value)
 
-        # Escribir filas una por una (empezando desde la fila 1, después del encabezado)
+        # Escribir filas una por una
         for row_num, row in enumerate(df_clean.itertuples(index=False), 1):
             worksheet.write_row(row_num, 0, row)
 
         # Guardar y cerrar el archivo Excel
         workbook.close()
-
         print(f"Decoding completed and saved to {excel_final}")
-
 
     def decode_log(self, log_path: str, output_file: str, output_format: str):
         """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
@@ -113,19 +110,14 @@ class Signal:
         # Crear lista con los datos de señales alineados con los timestamps
         data = {'Timestamp': sorted_timestamps}
         for signal in all_signals:
-            data[signal] = [grouped_decoded[timestamp].get(signal, None) for timestamp in sorted_timestamps]
+            data[signal] = [grouped_decoded[timestamp].get(signal, np.nan) for timestamp in sorted_timestamps]
 
         # Crear DataFrame de Pandas
         df = pd.DataFrame(data)
 
-        # **Asegurar la continuidad de los timestamps**
-        # Rellenar los gaps en los timestamps para que no haya espacios vacíos
-        full_index = np.arange(min(df['Timestamp']), max(df['Timestamp']), step=0.01)  # Define el intervalo adecuado
-        df = df.set_index('Timestamp').reindex(full_index).reset_index().rename(columns={'index': 'Timestamp'})
-
-        # **Interpolar señal por señal para eliminar celdas en blanco (NaN)**
+        # Interpolar para cada señal
         for signal in all_signals:
-            df[signal].interpolate(method='linear', inplace=True)
+            df[signal] = df[signal].interpolate(method='linear', limit_direction='both')
 
         # Guardar en el formato solicitado
         if output_format == 'xlsx':
@@ -137,7 +129,6 @@ class Signal:
 
 # Uso del código
 if __name__ == "__main__":
-    # Asegúrate de usar las rutas correctas para el archivo DBC y el log
     try:
         decoder = Signal("./TER.dbc")
         decoder.decode_log("RUN4.log", "nuevo_pruebaV3.xlsx", "xlsx")
