@@ -1,0 +1,33 @@
+archivo_excel = 'RUN4_timestamps_interpolados.xlsx'
+nombre_hoja = 'Data'
+columna = 'PITCH' 
+
+import math
+import pandas as pd
+
+class nuestaclase:
+    def __init__(self, archivo_excel, nombre_hoja, columna):
+        try:
+            self.df = pd.read_excel(archivo_excel, sheet_name=nombre_hoja)
+            self.valor = self.df[columna].iloc[indice]
+            print(f"Valor seleccionado del Excel: {self.valor}")
+        except Exception as e:
+            raise ValueError(f"Error al leer el archivo Excel: {e}")
+
+    def potencia(self, exponente):
+        return math.pow(self.valor, exponente)
+
+    def raiz_cuadrada(self):
+        if self.valor < 0:
+            raise ValueError("No se puede calcular la raíz cuadrada de un número negativo.")
+        return math.sqrt(self.valor)
+
+    def exponencial(self):
+        return math.exp(self.valor)
+
+nuestaclase= nuestaclase(archivo_excel, nombre_hoja, columna, indice)
+
+print(nuestaclase.potencia(3))
+print(nuestaclase.raiz_cuadrada())
+print(nuestaclase.exponencial())
+

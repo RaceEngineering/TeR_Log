@@ -4,6 +4,7 @@ import pandas as pd
 from collections import defaultdict
 import xlsxwriter
 import numpy as np
+import matplotlib.pyplot as plt  # Importar matplotlib para graficar
 
 class Signal:
     def __init__(self, dbc_path: str):
@@ -45,7 +46,23 @@ class Signal:
 
         print(f"Decoding completed and saved to {excel_final}")
 
-    def decode_log(self, log_path: str, output_file: str, output_format: str):
+    def _plot_signals(self, df: pd.DataFrame, signals: list):
+        """Generar un gráfico con los 'timestamps' en el eje X y una o más señales en el eje Y."""
+        plt.figure(figsize=(10, 6))
+        for signal in signals:
+            if signal in df.columns:
+                plt.plot(df['Timestamp'], df[signal], label=signal)
+            else:
+                print(f"Warning: Signal '{signal}' not found in the data.")
+        
+        plt.xlabel('Timestamp')
+        plt.ylabel('Signal Value')
+        plt.title('Signals Over Time')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot=None):
         """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
@@ -120,11 +137,16 @@ class Signal:
         else:
             print("Unsupported format")
 
+        # Graficar las señales si se proporcionaron
+        if signals_to_plot:
+            self._plot_signals(df, signals_to_plot)
+
+
 # Uso del código
 if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
-        decoder.decode_log("RUN9.log", "RUN9_timestamps_interpolados.xlsx", "xlsx")  # Guardar en CSV
+        # Decodificar y guardar los datos
+        decoder.decode_log("RUN4.log", "RUN4_timestamps_interpolados.xlsx", "xlsx", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}")
-

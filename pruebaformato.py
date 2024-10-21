@@ -35,18 +35,19 @@ class Signal:
         workbook = xlsxwriter.Workbook(excel_final)
         worksheet = workbook.add_worksheet("Data")
 
+        # Escribir las cabeceras
         for col_num, value in enumerate(df_clean.columns):
             worksheet.write(0, col_num, value)
 
+        # Escribir los datos
         for row_num, row in enumerate(df_clean.itertuples(index=False), 1):
             worksheet.write_row(row_num, 0, row)
         
         workbook.close()
-
         print(f"Decoding completed and saved to {excel_final}")
 
     def decode_log(self, log_path: str, output_file: str, output_format: str):
-        """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
+        """Decodificar el archivo de log usando el archivo DBC y generar los resultados."""
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
         # Abrir el log
@@ -124,7 +125,6 @@ class Signal:
 if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
-        decoder.decode_log("RUN9.log", "RUN9_timestamps_interpolados.xlsx", "xlsx")  # Guardar en CSV
+        decoder.decode_log("RUN4.log", "RUN4_timestamps_interpolados.csv", "csv")  # Guardar en XLSX
     except Exception as e:
         print(f"Error during execution: {e}")
-
