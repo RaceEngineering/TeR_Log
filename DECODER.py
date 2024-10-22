@@ -75,6 +75,17 @@ class Signal:
         workbook.close()
 
         print(f"Decoding completed and saved to {excel_final}")
+    
+    def _write_to_ascii(self, df: pd.DataFrame, ascii_file: str):
+        """Guardar los datos en formato ASCII (archivo de texto)."""
+        with open(ascii_file, 'w') as file:
+            # Escribir los encabezados de las columnas
+            file.write('\t'.join(df.columns) + '\n')
+            # Escribir los datos fila por fila
+            for _, row in df.iterrows():
+                file.write('\t'.join(map(str, row.values)) + '\n')
+
+        print(f"Data saved to {ascii_file} in ASCII format.")
 
     def _plot_signals(self, df: pd.DataFrame, signals: list, output_plot: str = None):
         """Generar un gráfico con los 'timestamps' en el eje X y una o más señales en el eje Y."""
@@ -179,6 +190,8 @@ class Signal:
             self._write_to_csv(df, output_file)
         elif output_format == 'mat':
             self._write_to_mat(df, output_file)
+        elif output_format == 'ascii':
+            self._write_to_ascii(df,output_file)
         else:
             print("Unsupported format")
 
@@ -188,6 +201,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos
-        decoder.decode_log("RUN4.log", "prueba_plot.mat", "mat", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN4.log", "prueba_plot.ascii", "ascii", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}")
