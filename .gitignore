@@ -7,6 +7,8 @@ __pycache__/
 *.so
 *.xlsx
 *.csv
+*.mat
+*.ascii
 # Distribution / packaging
 .Python
 build/
