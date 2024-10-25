@@ -1,46 +1,85 @@
 import re
+
 import cantools
+
 import pandas as pd
-from collections import defaultdict 
+
+from collections import defaultdict
+
 import xlsxwriter
+
 import numpy as np
-import matplotlib.pyplot as plt  # Importar matplotlib para graficar
+
+import matplotlib.pyplot as plt
+
 import operator
+
 from scipy.io import savemat
+
+from scipy.integrate import cumulative_trapezoid 
+
 from typing import List, Dict
 
+from numpy import log, log10, sin, cos, tan, exp, sqrt  
+
+
+
 class Signal:
+
     def __init__(self, dbc_path: str):
-        # Cargar el archivo DBC
+
         try:
+
             self.db = cantools.database.load_file(dbc_path)
+
             print(f"Loaded DBC: {dbc_path}")
+
         except Exception as e:
+
             print(f"Error loading DBC file: {e}")
+
             raise
 
-        # Imprimir todos los IDs y sus nombres de mensajes en el DBC
+
+
         self._print_message_ids()
-        
-        #METER OPERADORES Y PREFERENCIAS
+
+
+
         self.operations = {
+
             '+': operator.add,
+
             '-': operator.sub,
+
             '*': operator.mul,
+
             '/': operator.truediv
-        }
-        # Definir la precedencia de operadores
-        self.precedence = {
-            '+': 2,
-            '-': 2,
-            '*': 1,
-            '/': 1
+
         }
 
+
+
+        self.precedence = {
+
+            '+': 2,
+
+            '-': 2,
+
+            '*': 1,
+
+            '/': 1
+
+        }
+
+
+
     def _print_message_ids(self):
-        """Imprime los IDs de los mensajes definidos en el DBC."""
+
         print("Message IDs defined in the DBC:")
+
         for message in self.db.messages:
+
             print(f"ID: {message.frame_id} ({message.name})")
     
     def _write_to_csv(self, df: pd.DataFrame, csv_final: str):
@@ -84,9 +123,8 @@ class Signal:
             # Escribir los datos fila por fila
             for _, row in df.iterrows():
                 file.write('\t'.join(map(str, row.values)) + '\n')
-
         print(f"Data saved to {ascii_file} in ASCII format.")
-
+    
     def _plot_signals(self, df: pd.DataFrame, signals: list, output_plot: str = None):
         """Generar un gráfico con los 'timestamps' en el eje X y una o más señales en el eje Y."""
         plt.figure(figsize=(10, 6))
@@ -110,7 +148,125 @@ class Signal:
         else:
             plt.show()
 
-    def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot=None):
+
+    def parse_expression(self, expression: str, df: pd.DataFrame):
+
+        """
+
+        Supports math functions like log, sin, cos, etc.
+
+        """
+
+        expression = expression.replace("^", "**")  
+
+        columns = re.findall(r'[a-zA-Z_]+', expression)  
+
+        eval_dict = {col: df[col] for col in columns if col in df.columns}
+
+
+
+        math_functions = {
+
+            'log': log,        
+
+            'log10': log10,    
+
+            'sin': sin,
+
+            'cos': cos,
+
+            'tan': tan,
+
+            'exp': exp,
+
+            'sqrt': sqrt
+
+        }
+
+
+
+        
+
+        eval_scope = {**eval_dict, **math_functions}
+
+
+
+        return eval(expression, eval_scope)
+
+
+
+    def integrate(self, expression: str, df: pd.DataFrame):
+
+       
+
+        parsed_signal = self.parse_expression(expression, df)
+
+        integrated_signal = cumulative_trapezoid(parsed_signal, df['Timestamp'], initial=0)
+
+        return integrated_signal
+
+
+
+    def derivatives(self, expression: str, df: pd.DataFrame):
+
+       
+
+        parsed_signal = self.parse_expression(expression, df)
+
+        derivative_signal = np.gradient(parsed_signal, df['Timestamp'])
+
+        return derivative_signal
+
+    def process_user_command(self, user_input: str, df: pd.DataFrame):
+
+       
+
+        user_input = user_input.strip()
+
+        
+
+        if user_input.startswith("INT:"):
+
+            expression = user_input[4:].strip()
+
+            print(f"Integrating the expression: {expression}")
+
+            result = self.integrate(expression, df)
+
+            print("Integration Result:", result)
+
+            return result
+
+        
+
+        elif user_input.startswith("DER:"):
+
+            expression = user_input[4:].strip()
+
+            print(f"Deriving the expression: {expression}")
+
+            result = self.derivatives(expression, df)
+
+            print("Derivative Result:", result)
+
+            return result
+
+
+
+        else:
+
+            print("Invalid command. Use 'INT:' or 'DER:' at the start of your input.")
+    
+    def add_operation(self, df, expression: str, result_name: str) -> Dict[str, List[float]]:
+        """
+        Agrega una nueva columna de resultado basada en la expresión dada,
+        respetando la precedencia de operadores.
+        """
+        result = self._apply_operation_with_precedence(expression, df)  #CAMBAIRRRRRRR
+        df[result_name] = result  # Añadir el resultado con un nuevo nombre
+        return df
+        
+    def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot=None, user_input=None):
         """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
@@ -182,6 +338,10 @@ class Signal:
         if signals_to_plot:
             plot_file = "plot.png"
             self._plot_signals(df, signals_to_plot, plot_file)
+        
+        if user_input:
+            self.process_user_command(user_input,df)
+            grouped_decoded = self.add_operation(df, expression, result_name)  #CAMBIARRR
 
         # Guardar en el formato solicitado
         if output_format.lower() == 'xlsx':
@@ -196,11 +356,15 @@ class Signal:
             print("Unsupported format")
 
 
-# Uso del código
 if __name__ == "__main__":
+
     try:
+
         decoder = Signal("./TER.dbc")
-        # Decodificar y guardar los datos
-        decoder.decode_log("RUN4.log", "prueba_plot.ascii", "ascii", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN4.log", "prueba_fatima.csv", "xlsx", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"], user_input="INT: log(PITCH^2 + YAW^2)",operation_result="ENERGY")  # Cambia Signal1, Signal2 por los nombres reales de las señales
+
+
     except Exception as e:
+
         print(f"Error during execution: {e}")
+
