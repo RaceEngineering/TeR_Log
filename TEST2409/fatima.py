@@ -73,7 +73,6 @@ class Signal:
         }
 
 
-
     def _print_message_ids(self):
 
         print("Message IDs defined in the DBC:")
@@ -148,22 +147,15 @@ class Signal:
         else:
             plt.show()
 
-
     def parse_expression(self, expression: str, df: pd.DataFrame):
-
         """
-
         Supports math functions like log, sin, cos, etc.
-
         """
-
         expression = expression.replace("^", "**")  
 
         columns = re.findall(r'[a-zA-Z_]+', expression)  
 
         eval_dict = {col: df[col] for col in columns if col in df.columns}
-
-
 
         math_functions = {
 
@@ -183,90 +175,50 @@ class Signal:
 
         }
 
-
-
-        
-
         eval_scope = {**eval_dict, **math_functions}
-
-
 
         return eval(expression, eval_scope)
 
-
-
     def integrate(self, expression: str, df: pd.DataFrame):
-
-       
-
         parsed_signal = self.parse_expression(expression, df)
-
         integrated_signal = cumulative_trapezoid(parsed_signal, df['Timestamp'], initial=0)
-
         return integrated_signal
 
-
-
     def derivatives(self, expression: str, df: pd.DataFrame):
-
-       
-
         parsed_signal = self.parse_expression(expression, df)
-
         derivative_signal = np.gradient(parsed_signal, df['Timestamp'])
-
         return derivative_signal
 
     def process_user_command(self, user_input: str, df: pd.DataFrame):
-
-       
-
         user_input = user_input.strip()
-
         
-
         if user_input.startswith("INT:"):
 
             expression = user_input[4:].strip()
-
             print(f"Integrating the expression: {expression}")
-
             result = self.integrate(expression, df)
-
             print("Integration Result:", result)
-
             return result
-
-        
 
         elif user_input.startswith("DER:"):
-
             expression = user_input[4:].strip()
-
             print(f"Deriving the expression: {expression}")
-
             result = self.derivatives(expression, df)
-
             print("Derivative Result:", result)
-
             return result
-
-
-
         else:
 
             print("Invalid command. Use 'INT:' or 'DER:' at the start of your input.")
     
-    def add_operation(self, df, expression: str, result_name: str) -> Dict[str, List[float]]:
+    def add_operation(self, df, operation_result: str, result):
         """
         Agrega una nueva columna de resultado basada en la expresión dada,
         respetando la precedencia de operadores.
         """
-        result = self._apply_operation_with_precedence(expression, df)  #CAMBAIRRRRRRR
-        df[result_name] = result  # Añadir el resultado con un nuevo nombre
+        df[operation_result] = result  # Añadir el resultado con un nuevo nombre
         return df
         
-    def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot=None, user_input=None):
+    def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot=None, user_input=None, operation_result=None):
         """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
@@ -340,8 +292,9 @@ class Signal:
             self._plot_signals(df, signals_to_plot, plot_file)
         
         if user_input:
-            self.process_user_command(user_input,df)
-            grouped_decoded = self.add_operation(df, expression, result_name)  #CAMBIARRR
+            result=self.process_user_command(user_input,df)
+            if result is not None:
+                df = self.add_operation(df,operation_result,result)  #CAMBIARRR
 
         # Guardar en el formato solicitado
         if output_format.lower() == 'xlsx':

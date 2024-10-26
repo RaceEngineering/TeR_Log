@@ -201,6 +201,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos
-        decoder.decode_log("RUN4.log", "prueba_plot.ascii", "ascii", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN4.log", "test2_RUN4.xlsx", "xlsx", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}")
