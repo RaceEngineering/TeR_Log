@@ -86,6 +86,25 @@ class Signal:
                 file.write('\t'.join(map(str, row.values)) + '\n')
 
         print(f"Data saved to {ascii_file} in ASCII format.")
+    
+    #def _write_to_asc(self, df: pd.DataFrame, asc_file: str):
+        """Guardar los datos en formato ASC (ASCII log de CAN)."""
+        #with open(asc_file, 'w') as file:
+            # Encabezado típico de un archivo ASC
+            #file.write("date 2024-10-25\nbase hex  timestamps absolute\nbegin\n")
+
+            #for _, row in df.iterrows():
+                # Formatear cada fila según la estructura típica de los archivos ASC
+                #timestamp = f"{row['Timestamp']:.6f}"
+                #for signal_name, signal_value in row.items():
+                    #if signal_name == "Timestamp":
+                    #    continue
+                    # Aquí 'ID' y 'Name' deberían reemplazarse con el ID del mensaje y el nombre del mensaje en tu caso específico.
+                    #file.write(f"   {timestamp} 1 {signal_name}               Rx   d {signal_value} \n")
+
+            #file.write("end\n")
+
+        #print(f"Data saved to {asc_file} in ASC format.")
 
     def _plot_signals(self, df: pd.DataFrame, signals: list, output_plot: str = None):
         """Generar un gráfico con los 'timestamps' en el eje X y una o más señales en el eje Y."""
@@ -192,6 +211,8 @@ class Signal:
             self._write_to_mat(df, output_file)
         elif output_format == 'ascii':
             self._write_to_ascii(df,output_file)
+        #elif output_format.lower() == 'asc':
+            #self._write_to_asc(df, output_file)
         else:
             print("Unsupported format")
 
@@ -201,6 +222,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos
-        decoder.decode_log("RUN4.log", "test2_RUN4.xlsx", "xlsx", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN0.log", "test2_RUN0.asc", "asc", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}")
