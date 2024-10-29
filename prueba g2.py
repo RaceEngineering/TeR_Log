@@ -1,291 +1,256 @@
 import re
 import cantools
 import pandas as pd
-from collections import defaultdict 
+from collections import defaultdict
 import xlsxwriter
 import numpy as np
-import matplotlib.pyplot as plt  # Importar matplotlib para graficar
+import matplotlib.pyplot as plt
 import operator
-from scipy.io import savemat
-from scipy.interpolate import interp1d
 from typing import List, Dict
+from numpy import log, log10, sin, cos, tan, exp, sqrt  
+from scipy.io import savemat  
 
-class Signal:
-    def __init__(self, dbc_path=None):
-        # Cargar el archivo DBC solo si se proporciona la ruta
-        if dbc_path:
-            self.db = cantools.database.load_file(dbc_path)
-            print(f"Loaded DBC: {dbc_path}")
-        else:
-            self.db = None  # Inicializar sin base de datos si no se proporciona dbc_path
+class Señal:
 
-        # Definir las operaciones y precedencia
-        self.operations = {
+    def __init__(self, ruta_dbc: str):
+        try:
+            self.db = cantools.database.load_file(ruta_dbc)
+            print(f"DBC cargado: {ruta_dbc}")
+        except Exception as e:
+            print(f"Error al cargar el archivo DBC: {e}")
+            raise
+
+        self._imprimir_ids_mensajes()
+        # Operaciones aritméticas básicas disponibles
+        self.operaciones = {
             '+': operator.add,
             '-': operator.sub,
             '*': operator.mul,
             '/': operator.truediv
         }
-        self.precedence = {
+        # Precedencia para cada operador
+        self.precedencia = {
             '+': 2,
             '-': 2,
             '*': 1,
             '/': 1
         }
 
-    def __add__(self, otra):
-        """Sobrecarga del operador + para sumar dos señales."""
-        return self._operate(otra, '+')
+    def _imprimir_ids_mensajes(self):
+        print("IDs de mensaje definidos en el DBC:")
+        for mensaje in self.db.messages:
+            print(f"ID: {mensaje.frame_id} ({mensaje.name})")
 
-    def __sub__(self, otra):
-        """Sobrecarga del operador - para restar dos señales."""
-        return self._operate(otra, '-')
+    def _guardar_en_csv(self, df: pd.DataFrame, csv_final: str):
+        """Guardar los datos en formato CSV."""
+        df.to_csv(csv_final, index=False)
+        print(f"Decodificación completada y guardada en {csv_final}")
 
-    def __mul__(self, otra):
-        """Sobrecarga del operador * para multiplicar dos señales."""
-        return self._operate(otra, '*')
+    def _guardar_en_mat(self, df: pd.DataFrame, archivo_mat: str):
+        """Guardar los datos en formato .mat para MATLAB."""
+        datos_mat = {col: df[col].values for col in df.columns}
+        savemat(archivo_mat, datos_mat)
+        print(f"Datos guardados en {archivo_mat} en formato MATLAB.")
 
-    def __truediv__(self, otra):
-        """Sobrecarga del operador / para dividir dos señales."""
-        return self._operate(otra, '/')
+    def _guardar_en_excel(self, df: pd.DataFrame, archivo_excel: str, ruta_grafico: str = None):
+        """Guardar los datos en Excel línea por línea e insertar gráfico en una segunda hoja."""
+        df_limpio = df.fillna('').replace([np.inf, -np.inf], '')  # Reemplazar NaN e inf por cadena vacía
+        workbook = xlsxwriter.Workbook(archivo_excel)
+        worksheet = workbook.add_worksheet("Datos")
 
-    def _operate(self, otra, operador):
-        """Método genérico para realizar operaciones entre señales."""
-        if not isinstance(otra, Signal):
-            raise ValueError("Solo se pueden operar instancias de Signal.")
+        # Escribir los datos en la primera hoja
+        for col_num, valor in enumerate(df_limpio.columns):
+            worksheet.write(0, col_num, valor)
 
-        # Ajustar las señales al mismo tamaño
-        max_len = max(len(self.valores), len(otra.valores))
-        valores_self = self._interpolate(self.valores, max_len)
-        valores_otra = self._interpolate(otra.valores, max_len)
+        for fila_num, fila in enumerate(df_limpio.itertuples(index=False), 1):
+            worksheet.write_row(fila_num, 0, fila)
 
-        # Realizar la operación correspondiente
-        resultado_valores = self.operations[operador](np.array(valores_self), np.array(valores_otra))
-        nuevo_nombre = f"({self.nombre} {operador} {otra.nombre})"
+        # Insertar el gráfico en la segunda hoja si se proporcionó
+        if ruta_grafico:
+            worksheet_grafico = workbook.add_worksheet("Gráfico")
+            worksheet_grafico.insert_image('B2', ruta_grafico)
+
+        workbook.close()
+        print(f"Decodificación completada y guardada en {archivo_excel}")
+
+    def _guardar_en_ascii(self, df: pd.DataFrame, archivo_ascii: str):
+        """Guardar los datos en formato ASCII (archivo de texto)."""
+        with open(archivo_ascii, 'w') as archivo:
+            archivo.write('\t'.join(df.columns) + '\n')
+            for _, fila in df.iterrows():
+                archivo.write('\t'.join(map(str, fila.values)) + '\n')
+        print(f"Datos guardados en {archivo_ascii} en formato ASCII.")
+
+    def _graficar_señales(self, df: pd.DataFrame, señales: list, archivo_grafico: str = None):
+        """Generar un gráfico con los 'timestamps' en el eje X y una o más señales en el eje Y."""
+        plt.figure(figsize=(10, 6))
+        for señal in señales:
+            if señal in df.columns:
+                plt.plot(df['Timestamp'], df[señal], label=señal)
+            else:
+                print(f"Advertencia: Señal '{señal}' no encontrada en los datos.")
         
-        # Crear y devolver una nueva instancia de Signal
-        nueva_signal = Signal()  # Inicializa sin cargar DBC
-        nueva_signal.db = self.db  # Asigna la base de datos actual
-        nueva_signal.nombre = nuevo_nombre
-        nueva_signal.valores = resultado_valores.tolist()  # Guardar como lista
-
-        return nueva_signal
-
-    def _interpolate(self, valores, new_size):
-        """Interpolar valores a un nuevo tamaño."""
-        if len(valores) == 0:
-            return [0] * new_size  # Si la lista está vacía
-
-        x = np.linspace(0, 1, len(valores))
-        x_new = np.linspace(0, 1, new_size)
-        f = interp1d(x, valores, kind='linear', fill_value="extrapolate")
-        return f(x_new).tolist()
-
-    def get_signal_values(self, signal_name, log_path):
-        """Obtiene los valores de la señal desde el archivo de log."""
-        pattern = r'\((?P<timestamp>\d+\.\d{6})\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
+        plt.xlabel('Timestamp')
+        plt.ylabel('Valor de la Señal')
+        plt.title('Señales en el Tiempo')
+        plt.legend()
+        plt.grid(True)
         
-        # Abrir el log
+        # Guardar el gráfico si se proporciona un archivo de salida
+        if archivo_grafico:
+            plt.savefig(archivo_grafico)
+            plt.close()
+            print(f"Gráfico guardado en {archivo_grafico}")
+        else:
+            plt.show()
+
+    def evaluar_expresion(self, expresion: str, df: pd.DataFrame):
+        """Evaluar expresiones que contienen operaciones aritméticas básicas entre columnas."""
+        expresion = expresion.replace("^", "**")  # Reemplazar potencias para uso en eval
+
+        columnas = re.findall(r'[a-zA-Z_]+', expresion)  # Buscar nombres de columnas
+
+        eval_dict = {col: df[col] for col in columnas if col in df.columns}
+
+        # Incluir funciones matemáticas básicas si es necesario
+        funciones_matematicas = {
+            'log': log,
+            'log10': log10,
+            'sin': sin,
+            'cos': cos,
+            'tan': tan,
+            'exp': exp,
+            'sqrt': sqrt
+        }
+
+        eval_scope = {**eval_dict, **funciones_matematicas}
+
         try:
-            with open(log_path, 'r') as file:
-                log = file.read()
+            # Evaluar la expresión de forma segura
+            resultado = eval(expresion, {"__builtins__": None}, eval_scope)
+        except Exception as e:
+            print(f"Error al evaluar la expresión: {e}")
+            return None
+
+        return resultado
+
+    def procesar_comando_usuario(self, comando_usuario: str, df: pd.DataFrame):
+        comando_usuario = comando_usuario.strip()
+        
+        if comando_usuario.startswith("OP:"):
+            expresion = comando_usuario[3:].strip()
+            print(f"Evaluando la expresión: {expresion}")
+            resultado = self.evaluar_expresion(expresion, df)
+            print("Resultado de la Operación:", resultado)
+            return resultado
+        else:
+            print("Comando no válido. Usa 'OP:' al inicio de tu entrada.")
+
+    def agregar_operacion(self, df, nombre_columna: str, resultado):
+        """Agregar una nueva columna con el resultado de la operación."""
+        df[nombre_columna] = resultado
+        return df
+
+    def decodificar_log(self, ruta_log: str, archivo_salida: str, formato_salida: str, señales_a_graficar=None, comando_usuario=None, nombre_columna=None):
+        """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
+        patron = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interfaz>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<datos>[0-9A-F]{2,16})'
+        
+        # Abrir el archivo de log
+        try:
+            with open(ruta_log, 'r') as archivo:
+                log = archivo.read()
         except FileNotFoundError:
-            print(f"Error: El archivo de log '{log_path}' no se encontró.")
-            return []
+            print(f"Error: El archivo de log '{ruta_log}' no se encontró.")
+            return
         except Exception as e:
             print(f"Error al abrir el archivo de log: {e}")
-            return []
+            return
 
         # Compilar el patrón de regex
-        regex = re.compile(pattern)
-        grouped_decoded = defaultdict(lambda: defaultdict(lambda: None))
+        regex = re.compile(patron)
+
+        # Diccionario para almacenar los datos decodificados
+        decodificado_agrupado = defaultdict(lambda: defaultdict(lambda: None))
         timestamps = set()
 
-        # Hacer los matches y decodificar
+        # Realizar los matches y decodificar
         for match in regex.finditer(log):
             timestamp = float(match.group("timestamp"))
             timestamps.add(timestamp)
 
             msg_id_str = match.group("id")
-            msg_id = int(msg_id_str, 16)
+            msg_id = int(msg_id_str, 16)  # Convertir ID a entero
 
             try:
-                msg_data = bytearray.fromhex(match.group("data"))
-                log_decode = self.db.decode_message(msg_id, msg_data)
-                for key, value in log_decode.items():
-                    if isinstance(value, (int, float)):
-                        grouped_decoded[timestamp][key] = value
-            except Exception as e:
-                print(f"Error decoding message with ID {msg_id_str} (decimal {msg_id}): {e}")
+                # Convertir datos hexadecimales
+                msg_data = bytearray.fromhex(match.group("datos"))
+            except ValueError:
+                continue
 
-        # Ordenar los timestamps
-        sorted_timestamps = sorted(timestamps)
+            try:
+                # Decodificar mensaje con el DBC
+                decodificado = self.db.decode_message(msg_id, msg_data)
+                for clave, valor in decodificado.items():
+                    if isinstance(valor, (int, float)):
+                        decodificado_agrupado[timestamp][clave] = valor
+            except Exception as e:
+                print(f"Error al decodificar mensaje con ID {msg_id_str} (decimal {msg_id}): {e}")
+
+        # Ordenar timestamps
+        timestamps_ordenados = sorted(timestamps)
+
+        # Obtener todas las señales presentes en los logs
+        todas_señales = set()
+        for datos_decodificados in decodificado_agrupado.values():
+            todas_señales.update(datos_decodificados.keys())
 
         # Crear lista con los datos de señales alineados con los timestamps
-        signal_values = [grouped_decoded[timestamp].get(signal_name, np.nan) for timestamp in sorted_timestamps]
-        return sorted_timestamps, signal_values
+        datos = {'Timestamp': timestamps_ordenados}
+        for señal in todas_señales:
+            datos[señal] = [decodificado_agrupado[timestamp].get(señal, np.nan) for timestamp in timestamps_ordenados]
 
-    def evaluate_expression(self, expression, log_path):
-        """Evalúa una expresión que puede contener señales y operadores."""
-        tokens = self._tokenize(expression)
-        rpn = self._shunting_yard(tokens)
-        return self._evaluate_rpn(rpn, log_path)
+        # Crear DataFrame de Pandas
+        df = pd.DataFrame(datos)
 
-    def _tokenize(self, expression):
-        """Divide la expresión en tokens."""
-        tokens = []
-        token = ''
-        for char in expression:
-            if char in '()+-*/':
-                if token:
-                    tokens.append(token.strip())
-                    token = ''
-                tokens.append(char)
-            else:
-                token += char
-        if token:
-            tokens.append(token.strip())
-        return tokens
-
-    def _shunting_yard(self, tokens):
-        """Convierte la expresión a notación de polaca inversa."""
-        output = []
-        operators = []
-        for token in tokens:
-            if token in self.operations:  # Si es un operador
-                while (operators and operators[-1] in self.operations and
-                       self.precedence[operators[-1]] <= self.precedence[token]):
-                    output.append(operators.pop())
-                operators.append(token)
-            elif token == '(':
-                operators.append(token)
-            elif token == ')':
-                while operators and operators[-1] != '(':
-                    output.append(operators.pop())
-                operators.pop()  # Quitar '('
-            else:  # Si es una señal
-                output.append(token)
-        while operators:
-            output.append(operators.pop())
-        return output
-
-    def _evaluate_rpn(self, rpn, log_path):
-        """Evalúa la expresión en notación de polaca inversa."""
-        stack = []
-        for token in rpn:
-            if token in self.operations:
-                otra = stack.pop()
-                una = stack.pop()
-                # Obtener los valores de las señales
-                timestamp_una, valores_una = self.get_signal_values(una, log_path)
-                timestamp_otra, valores_otra = self.get_signal_values(otra, log_path)
-                signal_una = Signal()
-                signal_otra = Signal()
-                signal_una.nombre = una
-                signal_otra.nombre = otra
-                signal_una.valores = valores_una
-                signal_otra.valores = valores_otra
-
-                # Operar y almacenar resultados
-                resultado = signal_una._operate(signal_otra, token)
-                stack.append(resultado)
-            else:
-                # Añadir la señal correspondiente a la pila
-                stack.append(token)
-        return stack[0]
-
-    def plot_signals(self, df, signals_to_plot):
-        """Generar gráficos de las señales especificadas"""
-        for signal in signals_to_plot:
-            if signal in df.columns:
-                plt.plot(df['Timestamp'], df[signal], label=signal)
-        plt.xlabel('Timestamp')
-        plt.ylabel('Value')
-        plt.title('Signal Values over Time')
-        plt.legend()
-        plt.show()
-
-    def export_to_excel(self, df, output_file):
-        """Exportar el DataFrame a un archivo Excel"""
-        df.to_excel(output_file, index=False)
-        print(f"Datos exportados a Excel: {output_file}")
-
-    def export_to_matlab(self, df, output_file):
-        """Exportar el DataFrame a un archivo MATLAB"""
-        savemat(output_file, {col: df[col].to_numpy() for col in df.columns})
-        print(f"Datos exportados a MATLAB: {output_file}")
-
-    def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot=None):
-        """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
-        pattern = r'\((?P<timestamp>\d+\.\d{6})\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
+        # Interpolar para cada señal
+        for señal in todas_señales:
+            df[señal] = df[señal].interpolate(method='linear', limit_direction='both')
         
-        # Abrir el log
-        try:
-            with open(log_path, 'r') as file:
-                log = file.read()
-        except FileNotFoundError:
-            print(f"Error: El archivo de log '{log_path}' no se encontró.")
-            return
-        except Exception as e:
-            print(f"Error al abrir el archivo de log: {e}")
-            return
+        # Graficar señales si se proporcionaron
+        archivo_grafico = None
+        if señales_a_graficar:
+            archivo_grafico = "grafico.png"
+            self._graficar_señales(df, señales_a_graficar, archivo_grafico)
 
-        # Compilar el patrón de regex
-        regex = re.compile(pattern)
-        grouped_decoded = defaultdict(lambda: defaultdict(lambda: None))
-        timestamps = set()
+        if comando_usuario:
+            resultado = self.procesar_comando_usuario(comando_usuario, df)
+            if resultado is not None:
+                df = self.agregar_operacion(df, nombre_columna, resultado)
 
-        # Hacer los matches y decodificar
-        for match in regex.finditer(log):
-            timestamp = float(match.group("timestamp"))
-            timestamps.add(timestamp)
-
-            msg_id_str = match.group("id")
-            msg_id = int(msg_id_str, 16)
-
-            try:
-                msg_data = bytearray.fromhex(match.group("data"))
-                log_decode = self.db.decode_message(msg_id, msg_data)
-                for key, value in log_decode.items():
-                    if isinstance(value, (int, float)):
-                        grouped_decoded[timestamp][key] = value
-            except Exception as e:
-                print(f"Error decoding message with ID {msg_id_str} (decimal {msg_id}): {e}")
-
-        # Ordenar los timestamps
-        sorted_timestamps = sorted(timestamps)
-
-        # Crear DataFrame con los datos decodificados
-        data = {'Timestamp': sorted_timestamps}
-        for key in grouped_decoded[sorted_timestamps[0]].keys():
-            data[key] = [grouped_decoded[timestamp].get(key, np.nan) for timestamp in sorted_timestamps]
-
-        df = pd.DataFrame(data)
-
-        # Exportar a Excel si se especifica
-        if output_format.lower() == 'excel':
-            self.export_to_excel(df, output_file)
-        elif output_format.lower() == 'matlab':
-            self.export_to_matlab(df, output_file)
+        # Guardar en el formato solicitado
+        if formato_salida.lower() == 'xlsx':
+            self._guardar_en_excel(df, archivo_salida, archivo_grafico)
+        elif formato_salida.lower() == 'csv':
+            self._guardar_en_csv(df, archivo_salida)
+        elif formato_salida == 'mat':
+            self._guardar_en_mat(df, archivo_salida)
+        elif formato_salida == 'ascii':
+            self._guardar_en_ascii(df, archivo_salida)
         else:
-            print(f"Formato de salida '{output_format}' no soportado.")
+            print("Formato no soportado")
 
-        # Graficar las señales si se especifica
-        if signals_to_plot:
-            self.plot_signals(df, signals_to_plot)
 
-# Ejemplo de uso
 if __name__ == "__main__":
-    # Crear instancia de Signal
-    signal = Signal(dbc_path='ruta/al/archivo.dbc')
+    try:
+        decodificador = Señal("./TER.dbc")
+        decodificador.decodificar_log(
+            "RUN4.log", "prueba g2", "xlsx",
+            señales_a_graficar=["Barometric_Pressure", "V1", "Heading", "ANGLE"],
+            comando_usuario="OP: (Barometric_Pressure + Heading) * 2 / 3", nombre_columna="SOL"
+        )
+    finally:
+        print("Ejecución del decodificador completada.")
 
-    # Evaluar una expresión con nombres de señales
-    expression = "V_tot + Barometri"  # Reemplaza con los nombres de las señales deseadas
-    resultado_signal = signal.evaluate_expression(expression, 'ruta/al/archivo.log')
-    print(f"Resultado de la expresión '{expression}': {resultado_signal.nombre} = {resultado_signal.valores}")
-
-    # Decodificar log
-    signal.decode_log('ruta/al/archivo.log', 'resultado.xlsx', 'excel', signals_to_plot=['Signal1', 'Signal2'])
 
 
 
