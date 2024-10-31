@@ -244,7 +244,7 @@ if __name__ == "__main__":
     try:
         decodificador = Señal("./TER.dbc")
         decodificador.decodificar_log(
-            "RUN4.log", "prueba g2", "xlsx",
+            "RUN0.log", "prueba g2", "xlsx",
             señales_a_graficar=["Barometric_Pressure", "V1", "Heading", "ANGLE"],
             comando_usuario="OP: (Barometric_Pressure + Heading) * 2 / 3", nombre_columna="SOL"
         )
