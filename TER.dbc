@@ -32,7 +32,7 @@ NS_ :
     SG_MUL_VAL_
 
 BS_: 
-BU_: SteeringWheel PEDAL TER_CMDS FRONT_AXLE IMU LVBMS ECU CHARGER TireTemps 
+BU_: STEER PEDAL TER_CMDS FRONT_AXLE IMU LVBMS ECU CHARGER TireTemps REFRI 
 BO_ 1016 rrTemp: 8 TireTemps
    SG_ TW4 : 55|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
    SG_ TW3 : 39|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
@@ -57,15 +57,16 @@ BO_ 1008 flTemp: 8 TireTemps
    SG_ TW2 : 23|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
    SG_ TW1 : 7|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
 
-BO_ 9 Buttons_BitMap: 8 SteeringWheel
-   SG_ r6 : 7|1@1+ (1,0) [0|0] "" Vector__XXX
-   SG_ r5 : 6|1@1+ (1,0) [0|0] "" Vector__XXX
-   SG_ r4 : 5|1@1+ (1,0) [0|0] "" Vector__XXX
-   SG_ r3 : 4|1@1+ (1,0) [0|0] "" Vector__XXX
-   SG_ r2 : 3|1@1+ (1,0) [0|0] "" Vector__XXX
-   SG_ r1 : 2|1@1+ (1,0) [0|0] "" Vector__XXX
+BO_ 9 BTN: 8 STEER
+   SG_ EL : 7|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ ER : 6|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ b4 : 5|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ b3 : 4|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ b2 : 3|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ b1 : 2|1@1+ (1,0) [0|0] "" Vector__XXX
    SG_ LI : 1|1@1+ (1,0) [0|0] "" Vector__XXX
    SG_ LD : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ EB : 8|1@1+ (1,0) [0|0] "" Vector__XXX
 
 BO_ 3 APPS: 8 PEDAL
    SG_ APPS_1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
@@ -210,18 +211,25 @@ BO_ 40 InverterInfo: 8 ECU
    SG_ leftMotorTemp : 32|8@1+ (1,0) [0|1] "" Vector__XXX
    SG_ rightMotorTemp : 40|8@1+ (1,0) [0|1] "" Vector__XXX
 
-BO_ 36 Front_Temps: 8 FRONT_AXLE
-   SG_ TempL : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
-   SG_ TempR : 16|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
-
+BO_ 36 Front_TempsR: 8 FRONT_AXLE
+   SG_ TempL : 16|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
+   SG_ TempR : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
 
 BO_ 35 Front_Susp: 8 FRONT_AXLE
    SG_ frDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
    SG_ flDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
 
+BO_ 2147483689 Front_TempsL: 8 FRONT_AXLE
+   SG_ TempR : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
+   SG_ TempL : 16|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
 
+BO_ 2147483984 REFRI_TEMPS: 8 REFRI
+   SG_ TR_IN : 0|10@1+ (0.1,0) [0|1] "C" Vector__XXX
+   SG_ TR_OUT : 10|10@1+ (0.1,0) [0|1] "C" Vector__XXX
+   SG_ TL_IN : 20|10@1+ (0.1,0) [0|1] "C" Vector__XXX
+   SG_ TL_OUT : 30|10@1+ (0.1,0) [0|1] "C" Vector__XXX
 
-CM_ BU_ SteeringWheel "The Steering Input MOdule";
+CM_ BU_ STEER "The Steering Input MOdule";
 CM_ BU_ PEDAL "The Drivers Sensor Board";
 CM_ BU_ TER_CMDS "The Command Subsystem For TeR Vehicle";
 CM_ BU_ FRONT_AXLE "The Board for Front axle sensors";
@@ -229,6 +237,7 @@ CM_ BU_ IMU "TeRs Inertial Measurement Unit";
 CM_ BU_ LVBMS "The LV battery Management System";
 CM_ BU_ ECU "The VCU for TeR Vehicle";
 CM_ BU_ CHARGER "The Control Module for TeR Charger";
+CM_ BU_ REFRI "The refrigeration module";
 CM_ BO_ 1 "(0-63)No Args, (64-127)OnOff,(128-191)Value,(192-255)Custom";
 VAL_ 1 CMD 14 "resetBMS" 1 "Calibrate_APPS_min" 2 "Calibrate_APPS_max" 5 "Calibrate_STEER_Leftest" 6 "Calibrate_STEER_Rightest" 8 "discharge" 9 "precharge" 10 "beep" 11 "ready2Drive" 193 "setLimits" 194 "setDynamicConfig" 64 "switchRefri" 65 "switchScs" 0 "charge" 12 "startLog" 13 "endLog" 195 "setTime";
 VAL_ 1 ONOFF 0 "OFF" 1 "ON";

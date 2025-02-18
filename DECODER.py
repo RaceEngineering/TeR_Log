@@ -433,32 +433,7 @@ class Señal:
             except Exception as e:
                 print(f"Error al decodificar mensaje con ID {msg_id_str} (decimal {msg_id}): {e}")
 
-        # Ordenar timestamps
-        timestamps_ordenados = sorted(timestamps)
-
-        # Obtener todas las señales presentes en los logs
-        todas_señales = set()
-        for datos_decodificados in decodificado_agrupado.values():
-            todas_señales.update(datos_decodificados.keys())
-
-        # Crear lista con los datos de señales alineados con los timestamps
-        datos = {'Timestamp': timestamps_ordenados}
-        for señal in todas_señales:
-            datos[señal] = [decodificado_agrupado[timestamp].get(señal, np.nan) for timestamp in timestamps_ordenados]
-
-        # Crear DataFrame de Pandas
-        df = pd.DataFrame(datos)
-
-        # Interpolar para cada señal
-        for señal in todas_señales:
-            df[señal] = df[señal].interpolate(method='linear', limit_direction='both')
-        
-        # Graficar señales si se proporcionaron
-        archivo_grafico = None
-        if señales_a_graficar:
-            archivo_grafico = "grafico.png"
-            self._graficar_señales(df, señales_a_graficar, archivo_grafico)
-
+        # Ordenar timestampsi
         if comando_usuario:
             resultado = self.procesar_comando_usuario(comando_usuario, df)
             if resultado is not None:
