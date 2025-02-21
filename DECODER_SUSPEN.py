@@ -87,7 +87,8 @@ class Signal:
 
         print(f"Data saved to {ascii_file} in ASCII format.")
 
-    def _plot_signals(self, df: pd.DataFrame, signals: list, output_plot: str = None):
+    
+    def plot_aceleracionVSroll(self, df: pd.DataFrame, signals: list, output_plot: str = None):
         """Generar un gráfico con los 'timestamps' en el eje X y una o más señales en el eje Y."""
         plt.figure(figsize=(10, 6))
         for signal in signals:
@@ -97,8 +98,8 @@ class Signal:
                 print(f"Warning: Signal '{signal}' not found in the data.")
         
         plt.xlabel('Timestamp')
-        plt.ylabel('Signal Value')
-        plt.title('Signals Over Time')
+        plt.ylabel('Señales')
+        plt.title('Aceleracion VS Roll')
         plt.legend()
         plt.grid(True)
         
@@ -110,7 +111,7 @@ class Signal:
         else:
             plt.show()
 
-    def decode_log(self, log_path: str, output_file: str, output_format: str, signals_to_plot=None):
+    def decode_log(self, log_path: str, output_file: str, output_format: str, aceleracionVSroll=None):
         """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
@@ -179,10 +180,10 @@ class Signal:
         
         # Graficar las señales si se proporcionaron
         plot_file = None
-        if signals_to_plot:
-            plot_file = "plot.png"
-            self._plot_signals(df, signals_to_plot, plot_file)
-
+        if aceleracionVSroll:
+            plot_file = "aceleracionVSroll.png"
+            self.plot_aceleracionVSroll(df, aceleracionVSroll, plot_file)
+       
         # Guardar en el formato solicitado
         if output_format.lower() == 'xlsx':
             self._write_to_excel_line_by_line(df, output_file, plot_file)
@@ -201,6 +202,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos
-        decoder.decode_log("RUN4.log", "prueba_suspen.xlsx", "xlsx", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN4 copy.log", "prueba_suspen.xlsx", "xlsx", aceleracionVSroll=["ROLL","a_y"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}")
