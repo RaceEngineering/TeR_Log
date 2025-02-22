@@ -54,7 +54,7 @@ class Signal:
         savemat(mat_file, mat_data)
         print(f"Data saved to {mat_file} in MATLAB format.")
     
-    def _write_to_excel_line_by_line(self, df: pd.DataFrame, excel_final: str, plot_path: str = None):
+    def _write_to_excel_line_by_line(self, df: pd.DataFrame, excel_final: str, plot_path_aceleracionVSroll: str = None):
         """Escribir línea por línea en Excel usando xlsxwriter e insertar gráfico en una segunda hoja."""
         df_clean = df.fillna('').replace([np.inf, -np.inf], '')  # Reemplazar NaN e inf por cadena vacía
         workbook = xlsxwriter.Workbook(excel_final)
@@ -68,9 +68,9 @@ class Signal:
             worksheet.write_row(row_num, 0, row)
         
         # Insertar la gráfica en la segunda hoja si se proporcionó el gráfico
-        if plot_path:
-            worksheet_plot = workbook.add_worksheet("Plot")
-            worksheet_plot.insert_image('B2', plot_path)  # Insertar la imagen en la celda B2 de la segunda hoja
+        if plot_path_aceleracionVSroll:
+            worksheet_plot = workbook.add_worksheet("AceleracionVSroll")
+            worksheet_plot.insert_image('B2', plot_path_aceleracionVSroll)  # Insertar la imagen en la celda B2 de la segunda hoja
 
         workbook.close()
 
@@ -179,14 +179,14 @@ class Signal:
             df[signal] = df[signal].interpolate(method='linear', limit_direction='both')
         
         # Graficar las señales si se proporcionaron
-        plot_file = None
+        plot_file_aceleracionVSroll = None
         if aceleracionVSroll:
-            plot_file = "aceleracionVSroll.png"
-            self.plot_aceleracionVSroll(df, aceleracionVSroll, plot_file)
+            plot_file_aceleracionVSroll = "aceleracionVSroll.png"
+            self.plot_aceleracionVSroll(df, aceleracionVSroll, plot_file_aceleracionVSroll)
        
         # Guardar en el formato solicitado
         if output_format.lower() == 'xlsx':
-            self._write_to_excel_line_by_line(df, output_file, plot_file)
+            self._write_to_excel_line_by_line(df, output_file, plot_file_aceleracionVSroll)
         elif output_format.lower() == 'csv':
             self._write_to_csv(df, output_file)
         elif output_format == 'mat':
