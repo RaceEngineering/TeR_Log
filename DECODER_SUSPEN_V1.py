@@ -54,7 +54,7 @@ class Signal:
         savemat(mat_file, mat_data)
         print(f"Data saved to {mat_file} in MATLAB format.")
     
-    def _write_to_excel_line_by_line(self, df: pd.DataFrame, excel_final: str, plot_path_aceleracion_lateralVSroll: str = None,plot_path_aceleracion_longitudinalVSpitch: str = None):
+    def _write_to_excel_line_by_line(self, df: pd.DataFrame, excel_final: str, plot_path_aceleracion_lateralVSroll: str = None,plot_path_aceleracion_longitudinalVSpitch: str = None, plot_path_tempsVSsteeringVSaceleracion_latVSaceleracion_long: str = None, plot_path_velVSaceleracion_latVSsteeringVS_SAchassis: str = None, plot_path_velVSaceleracion_latVSsteeringVSyow_rate: str = None):
         """Escribir línea por línea en Excel usando xlsxwriter e insertar gráfico en una segunda hoja."""
         df_clean = df.fillna('').replace([np.inf, -np.inf], '')  # Reemplazar NaN e inf por cadena vacía
         workbook = xlsxwriter.Workbook(excel_final)
@@ -69,13 +69,25 @@ class Signal:
         
         # Insertar la gráfica en la segunda hoja si se proporcionó el gráfico
         if plot_path_aceleracion_lateralVSroll:
-            worksheet_plot = workbook.add_worksheet("AceleracionlateralVSRoll")
+            worksheet_plot = workbook.add_worksheet("Aceleracionlateral VS Roll")
             worksheet_plot.insert_image('B2', plot_path_aceleracion_lateralVSroll)  # Insertar la grafico aceleracion_lateralVSroll en la celda B2 de la segunda hoja
 
         if plot_path_aceleracion_longitudinalVSpitch:
-            worksheet_plot = workbook.add_worksheet("AceleracionlongitudinalVSPitch")
+            worksheet_plot = workbook.add_worksheet("Aceleracionlongitudinal VS Pitch")
             worksheet_plot.insert_image('B3', plot_path_aceleracion_longitudinalVSpitch)  # Insertar la grafico aceleracion_longitudinalVSpitch en la celda B3 de la segunda hoja
 
+        if plot_path_tempsVSsteeringVSaceleracion_latVSaceleracion_long:
+            worksheet_plot = workbook.add_worksheet("Temperaturas VS Steering VS Aceleración lateral VS Aceleración longitudinal")
+            worksheet_plot.insert_image('B4', plot_path_tempsVSsteeringVSaceleracion_latVSaceleracion_long)  # Insertar la grafico Temperaturas VS Steering VS Aceleración lateral VS Aceleración longitudinal en la celda B4 de la segunda hoja
+        
+        if plot_path_velVSaceleracion_latVSsteeringVS_SAchassis:
+            worksheet_plot = workbook.add_worksheet("Velocidad VS Aceleración lateral VS Steering VS Slip Angle")
+            worksheet_plot.insert_image('B5', plot_path_velVSaceleracion_latVSsteeringVS_SAchassis)  # Insertar la grafico Velocidad VS Aceleración lateral VS Steering VS Slip Angle en la celda B5 de la segunda hoja
+        
+        if plot_path_velVSaceleracion_latVSsteeringVSyow_rate:
+            worksheet_plot = workbook.add_worksheet("Velocidad VS Aceleración lateral VS Steering VS Yow Rate")
+            worksheet_plot.insert_image('B6', plot_path_velVSaceleracion_latVSsteeringVSyow_rate)  # Insertar la grafico Velocidad VS Aceleración lateral VS Steering VS Yow Rate en la celda B6 de la segunda hoja
+        
         workbook.close()
 
         print(f"Decoding completed and saved to {excel_final}")
@@ -91,7 +103,33 @@ class Signal:
 
         print(f"Data saved to {ascii_file} in ASCII format.")
 
-    
+    def plot_rollgradient(self, df: pd.DataFrame, signals: list, output_plot: str = None):
+        """Generar un gráfico con 'aceleracion_lat' en el eje X y el roll en el eje Y."""
+        if 'a_y' not in df.columns:
+            print("Warning: 'aceleracion_lat' no encontrado en los datos.")
+            return
+        
+        plt.figure(figsize=(10, 6))
+        for signal in signals:
+            if signal in df.columns:
+                plt.plot(df['a_y'], df[signal], label=signal)
+            else:
+                print(f"Warning: Signal '{signal}' not found in the data.")
+        
+        plt.xlabel('Aceleración Lateral')
+        plt.ylabel('Roll')
+        plt.title('Roll Gradient')
+        plt.legend()
+        plt.grid(True)
+        
+        # Guardar el gráfico si se proporciona un archivo de salida
+        if output_plot:
+            plt.savefig(output_plot)
+            plt.close()
+            print(f"Plot saved as {output_plot}")
+        else:
+            plt.show()
+
     def plot_aceleracion_lateralVSroll(self, df: pd.DataFrame, signals: list, output_plot: str = None):
         """Generar un gráfico con los 'timestamps' en el eje X y una o más señales en el eje Y."""
         plt.figure(figsize=(10, 6))
@@ -211,7 +249,7 @@ class Signal:
         else:
             plt.show()
 
-    def decode_log(self, log_path: str, output_file: str, output_format: str, aceleracion_lateralVSroll=None,aceleracion_longitudinalVSpitch=None, tempsVSsteeringVSaceleracion_latVSaceleracion_long=None,velVSaceleracion_latVSsteeringVS_SAchassis=None, velVSaceleracion_latVSsteeringVSyow_rate=None ):
+    def decode_log(self, log_path: str, output_file: str, output_format: str, aceleracion_lateralVSroll=None,aceleracion_longitudinalVSpitch=None, tempsVSsteeringVSaceleracion_latVSaceleracion_long=None,velVSaceleracion_latVSsteeringVS_SAchassis=None, velVSaceleracion_latVSsteeringVSyow_rate=None, rollgradient=None):
         """Decodificar el archivo de log usando el archivo DBC y generar los resultados"""
         pattern = r'\((?P<timestamp>\d+\.\d{6})\)\s+(?P<interface>\w+)\s+(?P<id>[0-9A-F]{3})\s*#\s*(?P<data>[0-9A-F]{2,16})'
         
@@ -278,6 +316,12 @@ class Signal:
         for signal in all_signals:
             df[signal] = df[signal].interpolate(method='linear', limit_direction='both')
         
+        #Graficar Roll Gradient
+        plot_file_rollgradient = None
+        if rollgradient:
+            plot_file_rollgradient = "rollgradient.png"
+            self.plot_rollgradient(df, rollgradient, plot_file_rollgradient)
+
         # Graficar Aceleracion lateral VS Roll
         plot_file_aceleracion_lateralVSroll = None
         if aceleracion_lateralVSroll:
@@ -310,7 +354,7 @@ class Signal:
        
         # Guardar en el formato solicitado
         if output_format.lower() == 'xlsx':
-            self._write_to_excel_line_by_line(df, output_file, plot_file_aceleracion_lateralVSroll,plot_file_aceleracion_longitudinalVSpitch)
+            self._write_to_excel_line_by_line(df, output_file, plot_file_aceleracion_lateralVSroll,plot_file_aceleracion_longitudinalVSpitch,plot_file_rollgradient)
         elif output_format.lower() == 'csv':
             self._write_to_csv(df, output_file)
         elif output_format == 'mat':
@@ -326,6 +370,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos                            ######CAMBIAR PARAMETROS DE GRAFICASSS
-        decoder.decode_log("RUN4 copy.log", "prueba_suspen.xlsx", "xlsx", aceleracion_lateralVSroll=["ROLL","a_y"],aceleracion_longitudinalVSpitch=["PITCH","a_x"],tempsVSsteeringVSaceleracion_latVSaceleracion_long=["ANGLE","a_y","a_x"],velVSaceleracion_latVSsteeringVS_SAchassis=["ANGLE","a_y","ANGLE"], velVSaceleracion_latVSsteeringVSyow_rate=["ANGLE","a_y","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN4 copy.log", "prueba_suspen.xlsx", "xlsx", aceleracion_lateralVSroll=["ROLL","a_y"],aceleracion_longitudinalVSpitch=["PITCH","a_x"],tempsVSsteeringVSaceleracion_latVSaceleracion_long=["ANGLE","a_y","a_x"],velVSaceleracion_latVSsteeringVS_SAchassis=["ANGLE","a_y","ANGLE"], velVSaceleracion_latVSsteeringVSyow_rate=["ANGLE","a_y","ANGLE"],rollgradient=["ROLL"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}") ###
