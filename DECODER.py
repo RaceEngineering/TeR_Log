@@ -177,6 +177,11 @@ class Signal:
         for signal in all_signals:
             df[signal] = df[signal].interpolate(method='linear', limit_direction='both')
         
+        # **Aplicar la conversión de la cremallera al ángulo del volante**
+        if 'ANGLE' in df.columns:
+            df['STEERING_ANGLE'] = (df['ANGLE'] * 360) / 101.65  # Cálculo del ángulo del volante
+            print(df[['ANGLE', 'STEERING_ANGLE']].head())
+        
         # Graficar las señales si se proporcionaron
         plot_file = None
         if signals_to_plot:
@@ -201,6 +206,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos
-        decoder.decode_log("RUN4.log", "prueba_suspen.xlsx", "xlsx", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN4 copy.log", "prueba_suspen1.xlsx", "xlsx", signals_to_plot=["rrRPM","rlRPM","APPS_AV","ANGLE"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}")
