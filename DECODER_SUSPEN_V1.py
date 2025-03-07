@@ -69,23 +69,23 @@ class Signal:
         
         # Insertar la gráfica en la segunda hoja si se proporcionó el gráfico
         if plot_path_aceleracion_lateralVSroll:
-            worksheet_plot = workbook.add_worksheet("Aceleracionlateral VS Roll")
+            worksheet_plot = workbook.add_worksheet("Aceleracionlat VS Roll")
             worksheet_plot.insert_image('B2', plot_path_aceleracion_lateralVSroll)  # Insertar la grafico aceleracion_lateralVSroll en la celda B2 de la segunda hoja
 
         if plot_path_aceleracion_longitudinalVSpitch:
-            worksheet_plot = workbook.add_worksheet("Aceleracionlongitudinal VS Pitch")
+            worksheet_plot = workbook.add_worksheet("Aceleracionlong VS Pitch")
             worksheet_plot.insert_image('B3', plot_path_aceleracion_longitudinalVSpitch)  # Insertar la grafico aceleracion_longitudinalVSpitch en la celda B3 de la segunda hoja
 
         if plot_path_tempsVSsteeringVSaceleracion_latVSaceleracion_long:
-            worksheet_plot = workbook.add_worksheet("Temperaturas VS Steering VS Aceleración lateral VS Aceleración longitudinal")
+            worksheet_plot = workbook.add_worksheet("TempsVS.SteerVS.a_latVS.a_long")
             worksheet_plot.insert_image('B4', plot_path_tempsVSsteeringVSaceleracion_latVSaceleracion_long)  # Insertar la grafico Temperaturas VS Steering VS Aceleración lateral VS Aceleración longitudinal en la celda B4 de la segunda hoja
         
         if plot_path_velVSaceleracion_latVSsteeringVS_SAchassis:
-            worksheet_plot = workbook.add_worksheet("Velocidad VS Aceleración lateral VS Steering VS Slip Angle")
+            worksheet_plot = workbook.add_worksheet("VelVS.a_latVS.SteerVS.SA")
             worksheet_plot.insert_image('B5', plot_path_velVSaceleracion_latVSsteeringVS_SAchassis)  # Insertar la grafico Velocidad VS Aceleración lateral VS Steering VS Slip Angle en la celda B5 de la segunda hoja
         
         if plot_path_velVSaceleracion_latVSsteeringVSyow_rate:
-            worksheet_plot = workbook.add_worksheet("Velocidad VS Aceleración lateral VS Steering VS Yow Rate")
+            worksheet_plot = workbook.add_worksheet("VelVS.a_latVS.SteerVS.YowRate")
             worksheet_plot.insert_image('B6', plot_path_velVSaceleracion_latVSsteeringVSyow_rate)  # Insertar la grafico Velocidad VS Aceleración lateral VS Steering VS Yow Rate en la celda B6 de la segunda hoja
         
         workbook.close()
