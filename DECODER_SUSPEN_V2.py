@@ -36,6 +36,25 @@ class Signal:
             '*': 1,
             '/': 1
         }
+         # 📌 Cargar la tabla de referencia desde "CALCULO ROLL.xlsx"
+        try:
+            self.xlsx_data = pd.read_excel("CALCULO ROLL.xlsx", sheet_name=0)
+            self.CLCULOROLL1_x = self.xlsx_data.iloc[:, 1].values  # Segunda columna: desplazamiento de referencia
+            self.CLCULOROLL1_y = self.xlsx_data.iloc[:, 0].values  # Primera columna: roll correspondiente
+
+            self.xlsx_data_pitch = pd.read_excel("CALCULO ROLL.xlsx", sheet_name=1)
+            self.CLCULOPITCH1_x = self.xlsx_data_pitch.iloc[:, 1].values  
+            self.CLCULOPITCH1_y = self.xlsx_data_pitch.iloc[:, 0].values  
+
+            print("✅ Archivo 'CALCULO ROLL.xlsx' cargado correctamente.")
+
+
+        except Exception as e:
+            print(f"❌ Error al cargar 'CALCULO ROLL.xlsx': {e}")
+            self.CLCULOROLL1_x = []
+            self.CLCULOROLL1_y = []
+            self.CLCULOPITCH1_x= []
+            self.CLCULOPITCH1_y = []
 
     def _print_message_ids(self):
         """Imprime los IDs de los mensajes definidos en el DBC."""
@@ -43,6 +62,71 @@ class Signal:
         for message in self.db.messages:
             print(f"ID: {message.frame_id} ({message.name})")
     
+    def calcular_roll_nuevo(self, df):
+        """
+        Calcula la nueva columna 'ROLL_nuevo' basada en las columnas 'FrontSuspL' y 'FrontSuspR'.
+        """
+        if "FrontSuspL" not in df.columns or "FrontSuspR" not in df.columns:
+            print("❌ Error: Las columnas 'FrontSuspL' y 'FrontSuspR' no están en el DataFrame.")
+            return df
+
+        # Calcular la diferencia delta
+        df["delta"] = df["FrontSuspL"] - df["FrontSuspR"]
+        df["ROLL_nuevo"] = np.zeros(len(df))
+
+        # Bucle para asignar valores de ROLL_nuevo basados en la tabla de referencia
+        for i in range(len(df)):
+            disp_abs = abs(df.loc[i, "delta"])
+            dif_min = np.inf
+            fila_seleccionada = 0
+
+            # Buscar el valor más cercano en CLCULOROLL1_x
+            for j in range(len(self.CLCULOROLL1_x)):
+                dif_actual = abs(disp_abs - abs(self.CLCULOROLL1_x[j]))
+                if dif_actual < dif_min:
+                    dif_min = dif_actual
+                    fila_seleccionada = j
+
+            # Asignar el valor de ROLL correspondiente
+            df.loc[i, "ROLL_nuevo"] = self.CLCULOROLL1_y[fila_seleccionada]
+
+            # Si delta es negativo, invertir el signo de ROLL
+            if df.loc[i, "delta"] < 0:
+                df.loc[i, "ROLL_nuevo"] = -df.loc[i, "ROLL_nuevo"]
+
+        # Eliminar la columna temporal 'delta'
+        df.drop(columns=["delta"], inplace=True)
+
+        return df
+    
+    def calcular_pitch_nuevo(self, df):
+        """ Calcula la nueva columna 'PITCH_nuevo' basada en el promedio de suspensiones delanteras y traseras. """
+        if not all(col in df.columns for col in ["FrontSuspL", "FrontSuspR", "RearSuspL", "RearSuspR"]):
+            print("❌ Error: No se encontraron todas las columnas necesarias para calcular 'PITCH_nuevo'.")
+            return df
+
+        df["delta_pitch"] = (df["FrontSuspL"] + df["FrontSuspR"]) / 2 - (df["RearSuspL"] + df["RearSuspR"]) / 2
+        df["PITCH_nuevo"] = np.zeros(len(df))
+
+        for i in range(len(df)):
+            disp_abs = abs(df.loc[i, "delta_pitch"])
+            dif_min = np.inf
+            fila_seleccionada = 0
+
+            for j in range(len(self.CLCULOPITCH1_x)):
+                dif_actual = abs(disp_abs - abs(self.CLCULOPITCH1_x[j]))
+                if dif_actual < dif_min:
+                    dif_min = dif_actual
+                    fila_seleccionada = j
+
+            df.loc[i, "PITCH_nuevo"] = self.CLCULOPITCH1_y[fila_seleccionada]
+            if df.loc[i, "delta_pitch"] < 0:
+                df.loc[i, "PITCH_nuevo"] = -df.loc[i, "PITCH_nuevo"]
+
+        df.drop(columns=["delta_pitch"], inplace=True)
+        return df
+
+
     def _write_to_csv(self, df: pd.DataFrame, csv_final: str):
         """Guardar los datos en formato CSV para evitar problemas con archivos Excel grandes."""
         df.to_csv(csv_final, index=False)
@@ -60,7 +144,7 @@ class Signal:
         """Guardar datos en un Excel con dos hojas:
            - 'Selected Data': Solo las señales seleccionadas por el usuario, si existen.
            - 'Full Data': Todos los datos del DataFrame."""
-           
+        
         df_clean = df.fillna('').replace([np.inf, -np.inf], '')  # Reemplazar NaN e inf por cadena vacía
         workbook = xlsxwriter.Workbook(excel_final)
         
@@ -352,6 +436,11 @@ class Signal:
         else:
             print("⚠️ La columna 'ANGLE' NO fue encontrada en el DataFrame.")
 
+
+        df = self.calcular_roll_nuevo(df)
+        df = self.calcular_pitch_nuevo(df)
+        print(df[["ROLL_nuevo", "PITCH_nuevo"]].head())  # Verificación
+
         #Graficar Roll Gradient
         plot_file_rollgradient = None
         if rollgradient:
@@ -406,6 +495,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos                            ######CAMBIAR PARAMETROS DE GRAFICASSS
-        decoder.decode_log("RUN4 copy.log", "prueba_suspenV2.xlsx", "xlsx", selected_signals = ["Timestamp","a_y","a_x","v_x","v_y","Yaw_Rate_z","Front_Susp","STEERING_ANGLE", "flTemp","frTemp","rlTemp","rrTemp","BPPS","ROLL","PITCH"], rollgradient=["ROLL"], aceleracion_lateralVSroll=["ROLL","a_y"],aceleracion_longitudinalVSpitch=["PITCH","a_x"],tempsVSsteeringVSaceleracion_latVSaceleracion_long=["flTemp","frTemp","rlTemp","rrTemp","STEERING_ANGLE","a_y","a_x"],velVSaceleracion_latVSsteeringVS_SAchassis=["v_x","STEERING_ANGLE","a_y","SAchassis"], velVSaceleracion_latVSsteeringVSyow_rate=["v_x","a_y","STEERING_ANGLE","Yaw_Rate_z"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("RUN4 copy.log", "prueba_suspen_prueba.xlsx", "xlsx", selected_signals = ["Timestamp","a_y","a_x","v_x","v_y","Yaw_Rate_z","Front_Susp","STEERING_ANGLE", "flTemp","frTemp","rlTemp","rrTemp","BPPS","ROLL_nuevo","PITCH_nuevo"], rollgradient=["ROLL_nuevo"], aceleracion_lateralVSroll=["ROLL_nuevo","a_y"],aceleracion_longitudinalVSpitch=["PITCH_nuevo","a_x"],tempsVSsteeringVSaceleracion_latVSaceleracion_long=["flTemp","frTemp","rlTemp","rrTemp","STEERING_ANGLE","a_y","a_x"],velVSaceleracion_latVSsteeringVS_SAchassis=["v_x","STEERING_ANGLE","a_y","SAchassis"], velVSaceleracion_latVSsteeringVSyow_rate=["v_x","a_y","STEERING_ANGLE","Yaw_Rate_z"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}") ###
