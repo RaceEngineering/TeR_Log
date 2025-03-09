@@ -36,7 +36,8 @@ class Signal:
             '*': 1,
             '/': 1
         }
-         # 📌 Cargar la tabla de referencia desde "CALCULO ROLL.xlsx"
+        
+        # 📌 Cargar la tabla de referencia desde "CALCULO ROLL.xlsx"
         try:
             self.xlsx_data = pd.read_excel("CALCULO ROLL.xlsx", sheet_name=0)
             self.CLCULOROLL1_x = self.xlsx_data.iloc[:, 1].values  # Segunda columna: desplazamiento de referencia

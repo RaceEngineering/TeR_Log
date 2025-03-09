@@ -188,14 +188,6 @@ BO_ 517 CHRG_STATUS: 8 CHARGER
    SG_ IMD : 25|1@1+ (1,0) [0|1] "A" Vector__XXX
    SG_ SL : 26|1@1+ (1,0) [0|1] "A" Vector__XXX
 
-BO_ 38 DynamicConfig: 8 ECU
-   SG_ Limiter M : 0|8@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ Mode : 8|8@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ TractionControl : 16|8@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ kwLimit m2 : 24|8@1+ (1,0) [0|1] "kW" Vector__XXX
-   SG_ trqLimit m0 : 24|8@1+ (1,0) [0|1] "n/m" Vector__XXX
-   SG_ speedLimit m1 : 24|8@1+ (1,0) [0|120] "km/h" Vector__XXX
-
 BO_ 39 WheelInfo: 8 ECU
    SG_ rrRPM : 0|16@1+ (1,0) [0|1] "" Vector__XXX
    SG_ rlRPM : 24|16@1+ (1,0) [0|1] "" Vector__XXX
@@ -216,8 +208,8 @@ BO_ 36 Front_TempsR: 8 FRONT_AXLE
    SG_ TempR : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
 
 BO_ 35 Front_Susp: 8 FRONT_AXLE
-   SG_ frDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
-   SG_ flDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+   SG_ rDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+   SG_ lDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
 
 BO_ 2147483689 Front_TempsL: 8 FRONT_AXLE
    SG_ TempR : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
@@ -229,6 +221,38 @@ BO_ 2147483984 REFRI_TEMPS: 8 REFRI
    SG_ TL_IN : 20|10@1+ (0.1,0) [0|1] "C" Vector__XXX
    SG_ TL_OUT : 30|10@1+ (0.1,0) [0|1] "C" Vector__XXX
 
+BO_ 2147483686 ECU_CONFIG: 8 ECU
+   SG_ ENTRY M : 0|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ SCS_ENABLE m0 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ R2D_BRAKE m1 : 8|8@1+ (1,0) [0|1] "Bar" Vector__XXX
+   SG_ LIMITER m2 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ DRIVING_MODE m3 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ TRACTION_CONTROL m4 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ TRQ_KP m5 : 8|32@5- (1,0) [0|1] "" Vector__XXX
+   SG_ TRQ_KI m6 : 8|32@5- (1,0) [0|1] "" Vector__XXX
+   SG_ TRQ_KD m7 : 8|32@5- (1,0) [0|1] "" Vector__XXX
+   SG_ TRQ_LIMIT m8 : 8|8@1+ (1,0) [0|1] "NM" Vector__XXX
+
+BO_ 2147483985 REFRI_CONFIG: 8 REFRI
+   SG_ POWER m0 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ ENTRY M : 0|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ INTENSITY m1 : 8|8@1+ (1,0) [0|100] "%" Vector__XXX
+   SG_ MODE m2 : 8|8@1+ (1,0) [0|1] "" Vector__XXX
+   SG_ TARGET_TEMP m3 : 8|8@1+ (1,0) [0|1] "ºC" Vector__XXX
+
+BO_ 2147483667 LV_INFO: 8 LVBMS
+   SG_ SOC : 0|8@1+ (0.1,0) [0|1] "%" Vector__XXX
+   SG_ battDuration : 8|12@1+ (0.1,0) [0|1] "min" Vector__XXX
+
+BO_ 2147483986 REFRI_RPM: 8 REFRI
+   SG_ L_RPM : 0|16@1+ (1,0) [0|1] "rpm" Vector__XXX
+   SG_ R_RPM : 16|16@1+ (1,0) [0|1] "rpm" Vector__XXX
+   SG_ ACCU_RPM : 32|16@1+ (1,0) [0|1] "rpm" Vector__XXX
+
+BO_ 2147483690 Rear_Susp: 8 FRONT_AXLE
+   SG_ lDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+   SG_ rDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+
 CM_ BU_ STEER "The Steering Input MOdule";
 CM_ BU_ PEDAL "The Drivers Sensor Board";
 CM_ BU_ TER_CMDS "The Command Subsystem For TeR Vehicle";
@@ -238,8 +262,9 @@ CM_ BU_ LVBMS "The LV battery Management System";
 CM_ BU_ ECU "The VCU for TeR Vehicle";
 CM_ BU_ CHARGER "The Control Module for TeR Charger";
 CM_ BU_ REFRI "The refrigeration module";
-CM_ BO_ 1 "(0-63)No Args, (64-127)OnOff,(128-191)Value,(192-255)Custom";
-VAL_ 1 CMD 14 "resetBMS" 1 "Calibrate_APPS_min" 2 "Calibrate_APPS_max" 5 "Calibrate_STEER_Leftest" 6 "Calibrate_STEER_Rightest" 8 "discharge" 9 "precharge" 10 "beep" 11 "ready2Drive" 193 "setLimits" 194 "setDynamicConfig" 64 "switchRefri" 65 "switchScs" 0 "charge" 12 "startLog" 13 "endLog" 195 "setTime";
+CM_ BO_ 1 "FUNCTION INDEX";
+CM_ BO_ 2 "RESPONSE of a command";
+VAL_ 1 CMD 14 "resetBMS" 1 "Calibrate_APPS_min" 2 "Calibrate_APPS_max" 5 "Calibrate_STEER_Leftest" 6 "Calibrate_STEER_Rightest" 8 "discharge" 9 "precharge" 10 "beep" 11 "ready2Drive" 0 "charge" 12 "startLog" 13 "endLog";
 VAL_ 1 ONOFF 0 "OFF" 1 "ON";
 VAL_ 18 VOLTAGES_OK 0 "FAULT" 1 "OK";
 VAL_ 18 TEMPS_OK 0 "FAULT" 1 "OK";
@@ -248,6 +273,10 @@ VAL_ 18 STATUS 0 "FAULT" 1 "OK";
 VAL_ 37 STATE 0 "WAIT_SL" 1 "READY2PRECH" 2 "PRECHARGING" 3 "PRECHARGED" 4 "DRIVING";
 VAL_ 2 CODE 1 "OK" 2 "ERROR" 3 "INVALID_STATE" 4 "OUT_OF_RANGE";
 VAL_ 517 State 0 "IDLE" 1 "READY" 2 "PRECHARGING" 3 "PRECHARGED" 4 "CHARGING";
-VAL_ 38 Limiter 0 "limitTorque" 1 "limitSpeed" 2 "limitMechPWR" 3 "limitElecPWR";
-VAL_ 38 Mode 0 "Lineal" 1 "basicTorque" 2 "mdsTorque" 3 "Backwards";
-VAL_ 38 TractionControl 0 "OFF" 1 "Basic";
+VAL_ 2147483686 ENTRY 0 "SCS_ENABLE" 1 "R2D_BRAKE_VAL" 2 "LIMITER" 3 "DRIVING_MODE" 4 "TRACTION_CONTROL" 5 "TRQV_KP" 6 "TRQV_KI" 7 "TRQV_KD" 8 "TRQ_LIMIT";
+VAL_ 2147483686 LIMITER 0 "TORQUE" 1 "SPEED" 2 "POWER";
+VAL_ 2147483686 DRIVING_MODE 0 "LINEAL" 1 "TORQUE_VECTORING";
+VAL_ 2147483686 TRACTION_CONTROL 0 "OFF";
+VAL_ 2147483985 POWER 0 "OFF" 1 "ON";
+VAL_ 2147483985 ENTRY 0 "POWER" 1 "INTENSITY" 2 "MODE" 3 "TARGET_TEMP";
+VAL_ 2147483985 MODE 0 "AUTO" 1 "MANUAL";

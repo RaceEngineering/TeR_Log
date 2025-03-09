@@ -345,12 +345,24 @@ class Signal:
         for signal in all_signals:
             df[signal] = df[signal].interpolate(method='linear', limit_direction='both')
         
+        
+        #CACULAR ANGULO STEERING
         if 'ANGLE' in df.columns:
             df['STEERING_ANGLE'] = (df['ANGLE'] * 360) / 101.65
             print("✅ Nueva columna agregada: 'STEERING_ANGLE'")
             print(df[['ANGLE', 'STEERING_ANGLE']].head())  # Verifica que los valores se están generando correctamente
         else:
             print("⚠️ La columna 'ANGLE' NO fue encontrada en el DataFrame.")
+
+        #CALCULAR SA CHASSIS
+        if "v_x" not in df.columns or "v_y" not in df.columns:
+            print("⚠️ 'v_x' o 'v_y' no están en el DataFrame.")
+
+        else: 
+            df["SAchassis"] = np.degrees(np.arctan2(df["v_y"], df["v_x"]))  # Usa arctan2 para evitar divisiones por 0
+            print("✅ Nueva columna agregada: 'SAchassis'")
+            print(df[['v_x','v_y', 'SAchassis']].head())  # Verifica que los valores se están generando correctamente
+        
 
         #Graficar Roll Gradient
         plot_file_rollgradient = None
