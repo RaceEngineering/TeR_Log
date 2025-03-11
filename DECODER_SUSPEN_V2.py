@@ -65,14 +65,20 @@ class Signal:
     
     def calcular_roll_nuevo(self, df):
         """
-        Calcula la nueva columna 'ROLL_nuevo' basada en las columnas 'FrontSuspL' y 'FrontSuspR'.
+        Calcula la nueva columna 'ROLL_nuevo' basada en las columnas 'flDisp' y 'frDisp'.
         """
-        if "FrontSuspL" not in df.columns or "FrontSuspR" not in df.columns:
-            print("❌ Error: Las columnas 'FrontSuspL' y 'FrontSuspR' no están en el DataFrame.")
+
+        if "flDisp" not in df.columns or "frDisp" not in df.columns:
+            print("❌ Error: Las columnas 'flDisp' y 'frDisp' no están en el DataFrame.")
             return df
+        
+        # Convertir a numérico para evitar errores con valores de tipo string
+        df["flDisp"] = pd.to_numeric(df["flDisp"], errors='coerce')
+        df["frDisp"] = pd.to_numeric(df["frDisp"], errors='coerce')
+
 
         # Calcular la diferencia delta
-        df["delta"] = df["FrontSuspL"] - df["FrontSuspR"]
+        df["delta"] = df["flDisp"] - df["frDisp"]
         df["ROLL_nuevo"] = np.zeros(len(df))
 
         # Bucle para asignar valores de ROLL_nuevo basados en la tabla de referencia
@@ -102,11 +108,17 @@ class Signal:
     
     def calcular_pitch_nuevo(self, df):
         """ Calcula la nueva columna 'PITCH_nuevo' basada en el promedio de suspensiones delanteras y traseras. """
-        if not all(col in df.columns for col in ["FrontSuspL", "FrontSuspR", "RearSuspL", "RearSuspR"]):
+        if not all(col in df.columns for col in ["flDisp", "frDisp", "rlDisp", "rrDisp"]):
             print("❌ Error: No se encontraron todas las columnas necesarias para calcular 'PITCH_nuevo'.")
             return df
 
-        df["delta_pitch"] = (df["FrontSuspL"] + df["FrontSuspR"]) / 2 - (df["RearSuspL"] + df["RearSuspR"]) / 2
+        df["flDisp"] = pd.to_numeric(df["flDisp"], errors='coerce')
+        df["frDisp"] = pd.to_numeric(df["frDisp"], errors='coerce')
+        df["rlDisp"] = pd.to_numeric(df["rlDisp"], errors='coerce')
+        df["rrDisp"] = pd.to_numeric(df["rrDisp"], errors='coerce')
+
+
+        df["delta_pitch"] = (df["flDisp"] + df["frDisp"]) / 2 - (df["rlDisp"] + df["rrDisp"]) / 2
         df["PITCH_nuevo"] = np.zeros(len(df))
 
         for i in range(len(df)):
@@ -430,12 +442,41 @@ class Signal:
         for signal in all_signals:
             df[signal] = df[signal].interpolate(method='linear', limit_direction='both')
         
+        #CACULAR ANGULO STEERING
         if 'ANGLE' in df.columns:
             df['STEERING_ANGLE'] = (df['ANGLE'] * 360) / 101.65
             print("✅ Nueva columna agregada: 'STEERING_ANGLE'")
             print(df[['ANGLE', 'STEERING_ANGLE']].head())  # Verifica que los valores se están generando correctamente
         else:
             print("⚠️ La columna 'ANGLE' NO fue encontrada en el DataFrame.")
+
+        
+        #CALCULAR SA CHASSIS
+        if "v_x" not in df.columns or "v_y" not in df.columns:
+            print("⚠️ 'v_x' o 'v_y' no están en el DataFrame.")
+
+        else: 
+            df["SAchassis"] = np.degrees(np.arctan2(df["v_y"], df["v_x"]))  # Usa arctan2 para evitar divisiones por 0
+            print("✅ Nueva columna agregada: 'SAchassis'")
+            print(df[['v_x','v_y', 'SAchassis']].head())  # Verifica que los valores se están generando correctamente
+        
+
+        # Ver los valores únicos en cada columna
+        print("📌 Valores únicos en flDisp:", df["flDisp"].unique())
+        print("📌 Valores únicos en frDisp:", df["frDisp"].unique())
+        print("📌 Valores únicos en rlDisp:", df["rlDisp"].unique())
+        print("📌 Valores únicos en rrDisp:", df["rrDisp"].unique())
+
+        # Mostrar las filas donde hay valores no numéricos
+        print("📌 Filas con valores no numéricos:")
+        print(df[df[["flDisp", "frDisp", "rlDisp", "rrDisp"]].applymap(lambda x: isinstance(x, str))])
+
+
+
+
+
+
+
 
 
         df = self.calcular_roll_nuevo(df)
@@ -496,6 +537,6 @@ if __name__ == "__main__":
     try:
         decoder = Signal("./TER.dbc")
         # Decodificar y guardar los datos                            ######CAMBIAR PARAMETROS DE GRAFICASSS
-        decoder.decode_log("RUN4 copy.log", "prueba_suspen_prueba.xlsx", "xlsx", selected_signals = ["Timestamp","a_y","a_x","v_x","v_y","Yaw_Rate_z","Front_Susp","STEERING_ANGLE", "flTemp","frTemp","rlTemp","rrTemp","BPPS","ROLL_nuevo","PITCH_nuevo"], rollgradient=["ROLL_nuevo"], aceleracion_lateralVSroll=["ROLL_nuevo","a_y"],aceleracion_longitudinalVSpitch=["PITCH_nuevo","a_x"],tempsVSsteeringVSaceleracion_latVSaceleracion_long=["flTemp","frTemp","rlTemp","rrTemp","STEERING_ANGLE","a_y","a_x"],velVSaceleracion_latVSsteeringVS_SAchassis=["v_x","STEERING_ANGLE","a_y","SAchassis"], velVSaceleracion_latVSsteeringVSyow_rate=["v_x","a_y","STEERING_ANGLE","Yaw_Rate_z"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
+        decoder.decode_log("D1F3.log", "test0903_suspen_run3_prueba.xlsx", "xlsx", selected_signals = ["Timestamp","a_y","a_x","v_x","v_y","Yaw_Rate_z","Front_Susp","STEERING_ANGLE", "flTemp","frTemp","rlTemp","rrTemp","BPPS","ROLL_nuevo","PITCH_nuevo","SAchassis"], rollgradient=["ROLL_nuevo"], aceleracion_lateralVSroll=["ROLL_nuevo","a_y"],aceleracion_longitudinalVSpitch=["PITCH_nuevo","a_x"],tempsVSsteeringVSaceleracion_latVSaceleracion_long=["flTemp","frTemp","rlTemp","rrTemp","STEERING_ANGLE","a_y","a_x"],velVSaceleracion_latVSsteeringVS_SAchassis=["v_x","STEERING_ANGLE","a_y","SAchassis"], velVSaceleracion_latVSsteeringVSyow_rate=["v_x","a_y","STEERING_ANGLE","Yaw_Rate_z"])  # Cambia Signal1, Signal2 por los nombres reales de las señales
     except Exception as e:
         print(f"Error during execution: {e}") ###

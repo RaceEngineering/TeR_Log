@@ -208,8 +208,8 @@ BO_ 36 Front_TempsR: 8 FRONT_AXLE
    SG_ TempR : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
 
 BO_ 35 Front_Susp: 8 FRONT_AXLE
-   SG_ rDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
-   SG_ lDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+   SG_ frDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+   SG_ flDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
 
 BO_ 2147483689 Front_TempsL: 8 FRONT_AXLE
    SG_ TempR : 0|16@1+ (0.1,0) [0|1] "grad" Vector__XXX
@@ -250,8 +250,8 @@ BO_ 2147483986 REFRI_RPM: 8 REFRI
    SG_ ACCU_RPM : 32|16@1+ (1,0) [0|1] "rpm" Vector__XXX
 
 BO_ 2147483690 Rear_Susp: 8 FRONT_AXLE
-   SG_ lDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
-   SG_ rDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+   SG_ rlDisp : 0|16@1- (0.1,0) [0|1] "mm" Vector__XXX
+   SG_ rrDisp : 16|16@1- (0.1,0) [0|1] "mm" Vector__XXX
 
 CM_ BU_ STEER "The Steering Input MOdule";
 CM_ BU_ PEDAL "The Drivers Sensor Board";
